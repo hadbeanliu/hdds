@@ -1,0 +1,132 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.dds</groupId>
+	<artifactId>hdds</artifactId>
+	<version>0.0.1</version>
+	<packaging>jar</packaging>
+
+	<name>hdds</name>
+	<url>http://maven.apache.org</url>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.6.RELEASE</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<hadoop.version>2.6.0</hadoop.version>
+		<scala.version>2.10.4</scala.version>
+		<spark.version>1.5.1</spark.version>
+		<spark-scala>2.10</spark-scala>
+		<hbase.version>1.3.1</hbase.version>
+		<apache.commons.lang>3.4</apache.commons.lang>
+		<springframework.version>4.1.0.RELEASE</springframework.version>
+		<restlet.version>2.3.7</restlet.version>
+
+		<com.rongji.dfish.cache>0.0.6</com.rongji.dfish.cache>
+
+		<dfish.base.version>1.2</dfish.base.version>
+		<dfish.json.base.version>2.3</dfish.json.base.version>
+		<dfish.permission.public.version>2.1</dfish.permission.public.version>
+		<dfish.permission.remote.version>2.1</dfish.permission.remote.version>
+		<dfish.sso.public.version>2.2</dfish.sso.public.version>
+		<dfish.sso.remote.version>2.2</dfish.sso.remote.version>
+		<dfish.ums.public.version>2.2</dfish.ums.public.version>
+		<dfish.ums.remote.version>2.2</dfish.ums.remote.version>
+	</properties>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-hadoop-hbase</artifactId>
+			<version>2.5.0.RELEASE</version>
+		</dependency>
+		<!-- dfish相关组件 -->
+		<dependency>
+			<groupId>com.rongji.auth</groupId>
+			<artifactId>dfish-authorize-api</artifactId>
+			<version>0.0.12</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.rongji.dfish</groupId>
+			<artifactId>dfish-cache</artifactId>
+			<version>0.0.6</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-hadoop</artifactId>
+			<version>2.5.0.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.hbase</groupId>
+			<artifactId>hbase-client</artifactId>
+			<version>${hbase.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>servlet-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.restlet.jee</groupId>
+			<artifactId>org.restlet</artifactId>
+			<version>${restlet.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet.jee</groupId>
+			<artifactId>org.restlet.ext.jaxrs</artifactId>
+			<version>${restlet.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet.jee</groupId>
+			<artifactId>org.restlet.ext.jackson</artifactId>
+			<version>${restlet.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.lionsoul</groupId>
+			<artifactId>jcseg-core</artifactId>
+			<version>2.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.rongji.cms</groupId>
+			<artifactId>cms-client</artifactId>
+			<version>7.1.3-beta15</version>
+		</dependency>
+
+	</dependencies>
+
+
+
+</project>
