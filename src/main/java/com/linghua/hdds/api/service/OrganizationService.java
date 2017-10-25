@@ -23,7 +23,7 @@ import com.linghua.hdds.store.User;
 @Service
 public class OrganizationService  extends ServiceTemplate<Organization>{
 	
-	private static final String DEFAULT_MAPPER_TABLE="organzation_msg_table";
+	private static final String DEFAULT_MAPPER_TABLE="orz_msg_table";
 
 	
 	public Organization mapRow(Result result) throws Exception{

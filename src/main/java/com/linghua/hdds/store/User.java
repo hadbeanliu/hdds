@@ -83,6 +83,7 @@ public class User implements BeanTemplate {
 			return mark;
 		case 6:
 			return subscription;
+
 		default:
 			throw new IndexOutOfBoundsException("Bad Index");
 

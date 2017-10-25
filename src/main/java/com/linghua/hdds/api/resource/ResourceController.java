@@ -4,11 +4,13 @@ import java.io.UnsupportedEncodingException;
 
 import javax.ws.rs.QueryParam;
 
+import com.linghua.hdds.common.CataLogManager;
 import org.lionsoul.jcseg.tokenizer.core.ADictionary;
 import org.lionsoul.jcseg.tokenizer.core.DictionaryFactory;
 import org.lionsoul.jcseg.tokenizer.core.ILexicon;
 import org.lionsoul.jcseg.tokenizer.core.IWord;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +41,11 @@ public class ResourceController {
 
 		return gson.toJson(iword);
 	}
+
+	@RequestMapping("/catalog2/{biz}")
+	public String getCaNameAndId(@PathVariable String biz){
+        return new Gson().toJson(CataLogManager.getAllCatalog(biz));
+    }
 
 	@RequestMapping("/speechpart")
 	@ResponseBody

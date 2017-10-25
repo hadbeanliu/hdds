@@ -55,7 +55,6 @@ abstract class ServiceTemplate<T extends BeanTemplate> {
 		}
 
 		ht.put(getTablename(bizCode), put);
-
 	}
 
 	public List<T> find(final String bizCode, final Set<Hcolumn> fields, Filter filter, final int hm,
@@ -71,6 +70,10 @@ abstract class ServiceTemplate<T extends BeanTemplate> {
 
 		return ht.get(getTablename(bizCode), id, getMapper());
 	}
+
+	public T get(final String bizCode, final String id, Set<Hcolumn> filter){
+	    return ht.get(getTablename(bizCode),id,filter,getMapper());
+    }
 
 	abstract RowMapper<T> getMapper();
 }

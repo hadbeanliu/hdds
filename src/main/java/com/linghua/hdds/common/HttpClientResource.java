@@ -87,8 +87,10 @@ public class HttpClientResource {
 	public static String post(Object entity,String uri){
 		
 		ClientResource client=new ClientResource(uri);
-		
-		 Representation res= client.post(entity);
+		Representation res=null;
+		if(entity!=null)
+		 res= client.post(entity);
+		else res =client.get();
 		
 		 try {
 			

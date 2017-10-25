@@ -32,7 +32,16 @@ public class FactoryConfigAndReleaseConf {
 		
 		return new HbaseDaoImpl(HBaseConfiguration.create());
 	}
-	
+	@Bean
+	public TemporaryRecorder getTempRecorder(){
+
+		return new TemporaryRecorder();
+	}
+	@Bean
+	public ItemRecorder getItemRecorder(){
+
+		return new ItemRecorder();
+	}
 	
 
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.linghua.hdds.api.response.Node;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 
@@ -29,11 +30,7 @@ public class CataLogManager {
 	private static final Map<String, Map<String, String>> bizMapping=new HashMap<>();
 
 	static {
-
 		init();
-
-//		buildTree();
-
 	}
 
 	public static String update(String id, String catalogs) {
@@ -53,7 +50,8 @@ public class CataLogManager {
 	public static List<Node> getCatalogTree(String siteId){
 		if(siteId==null)
 			return root.getChildren().get(0).getChildren();
-		
+		if(siteId.equals("all"))
+			return root.getChildren();
 		for(Node node:root.getChildren()){
 			if(node.getCaId().equals(siteId))
 				return node.getChildren();
@@ -91,9 +89,7 @@ public class CataLogManager {
 				List<String> list = new ArrayList<>();
 				list.add("1");
 				filter.setStatuses(list);
-				// filter.setCaName(catagory.trim());
-				// filter.setSiteId("190014");
-				// filter.setSiteId("190019");
+
 				Node topNode=new Node("", siteId, x.getSiteName());
 				Map<String, String> catalogs=new HashMap<>();
 				synchronized (nodes) {
@@ -105,7 +101,7 @@ public class CataLogManager {
 						for (WsCatalog cata : caNa.getList()) {
 							if (cata.getMetaKeywords() != null) {
 								for (String name : cata.getMetaKeywords().split(",|，")) {
-									catalogs.put(name, cata.getCaId());
+                                    catalogs.put(name, cata.getCaId());
 								}
 							}							
 							catalogs.put(cata.getCaName(), cata.getCaId());
@@ -114,7 +110,11 @@ public class CataLogManager {
 						}
 						if(siteId.equals("190014"))
 						   bizMapping.put("headlines", catalogs);
-						else bizMapping.put("govheadlines", catalogs);
+						else if(siteId.equals("190019")){
+							bizMapping.put("govheadlines", catalogs);
+						}else{
+							bizMapping.put(siteId, catalogs);
+						}
 						buildTree(tmpNodes,topNode);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -129,6 +129,11 @@ public class CataLogManager {
 
 		}
 
+	}
+
+	public static Map<String,String> getAllCatalog(String site){
+
+		return bizMapping.get(site);
 	}
 
 	public static String findCaIdByName(String bizCode,String catagory) {
@@ -172,89 +177,12 @@ public class CataLogManager {
 
 	public static void main(String[] args) {
 		
-		CataLogManager.init();
-		System.out.println(CataLogManager.getCatalogTree().size());
-		System.out.println(new Gson().toJson(CataLogManager.getCatalogTree()));
+//		CataLogManager.init();
+		System.out.println(CataLogManager.findCaIdByName("govheadlines","乡村道路"));
+//		System.out.println(CataLogManager.getCatalogTree().size());
+//		System.out.println(new Gson().toJson(CataLogManager.getCatalogTree()));
 		
 	}
 
 }
 
-class Node {
-
-	private String pId;
-	private String caId;
-	private String caName;
-	private List<Node> children = new ArrayList<>();
-
-	public Node(String pId, String caId, String caName) {
-		super();
-		this.pId = pId;
-		this.caId = caId;
-		this.caName = caName;
-
-	}
-
-	public String getpId() {
-		return pId;
-	}
-
-	public void setpId(String pId) {
-		this.pId = pId;
-	}
-
-	public String getCaId() {
-		return caId;
-	}
-
-	public void setCaId(String caId) {
-		this.caId = caId;
-	}
-
-	public String getCaName() {
-		return caName;
-	}
-
-	public void setCaName(String caName) {
-		this.caName = caName;
-	}
-
-	public List<Node> getChildren() {
-		return children;
-	}
-
-	public void setChildren(List<Node> children) {
-		this.children = children;
-	}
-
-	public void addChildren(Node child) {
-		if (children == null)
-			children = new ArrayList<>();
-		children.add(child);
-	}
-
-	public boolean hasChldren() {
-		return children != null && children.size() > 0;
-	}
-
-	public String toString() {
-
-		StringBuffer buff = new StringBuffer();
-		buff.append("[  ").append(this.caName);
-
-		if (hasChldren()) {
-
-			for (Node node : getChildren()) {
-				buff.append("\n").append("\t").append(">>>>");
-				buff.append(node.toString());
-			}
-			buff.append(" ]\n  ");
-		}
-		buff.append(" ]\n  ");
-
-		return buff.toString();
-		// return this.pId+"::"+this.caName+":"+
-		// (hasChldren()?getChildren().size():0);
-	}
-
-}

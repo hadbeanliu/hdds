@@ -1,19 +1,17 @@
 package com.linghua.hdds.api.resource;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigInteger;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Random;
-import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.ws.rs.QueryParam;
 
+import com.linghua.hdds.common.*;
+import com.linghua.hdds.preference.model.BaseTagWithLabelRecommendModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -27,9 +25,6 @@ import org.springframework.web.servlet.ModelAndView;
 import com.google.gson.Gson;
 import com.linghua.hdds.api.service.ItemService;
 import com.linghua.hdds.api.service.UserService;
-import com.linghua.hdds.common.CataLogManager;
-import com.linghua.hdds.common.HttpClientResource;
-import com.linghua.hdds.common.TableUtil;
 import com.linghua.hdds.meta.TwoTuple;
 import com.linghua.hdds.preference.model.BaseTagRecommendModel;
 import com.linghua.hdds.store.Item;
@@ -52,42 +47,49 @@ public class AnalysisAndRecommendResource {
 	
 	private static Gson gson=new Gson();
 
+	private static final Set<Item.FIELDS> FIELDS=new HashSet<>();
+
+    {
+        FIELDS.add(Item.FIELDS.CATAGORY);
+        FIELDS.add(Item.FIELDS.META);
+        FIELDS.add(Item.FIELDS.TITLE);
+        FIELDS.add(Item.FIELDS.HIS);
+        FIELDS.add(Item.FIELDS.FIRSTPUBTIME);
+    }
+    @RequestMapping("/rmdByT/{biz}/{ssCode}/{hm}")
+	public List<ArticleVo> recommendByTag(@PathVariable("biz") String biz,@PathVariable("ssCode") String ssCode,@PathVariable("hm") int hm,@RequestBody String[] tags){
+        if(tags ==null ||tags.length ==0) {
+	        return new ArrayList<>();
+        }
+        if(hm >10){
+            hm = 10;
+        }
+        BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
+        try {
+            return getArticleFromHbaseByIds(biz,model.recommend(tags,null),hm,true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 	
-	@RequestMapping("/rmmd/{biz}/{ssCode}/{uid}")
+	@RequestMapping("/rmdByUser/{biz}/{ssCode}/{uid}/{dir}")
 	@ResponseBody
-	public List<ArticleVo> recommendByMemory(@PathVariable("biz") String biz,@PathVariable("ssCode") String ssCode,@PathVariable("uid") String uid){
+	public List<ArticleVo> recommendByUser(@PathVariable("biz") String biz,@PathVariable("ssCode") String ssCode,@PathVariable("uid") String uid,@PathVariable("dir") String dir){
 
-		
-		int hm = 6;
 
-		final User user = StringUtils.hasLength(uid) ? userService.get(biz,uid) : null;
+		int hm = 20;
+        System.out.println(biz+"----"+uid+"----"+dir);
+        final User user = StringUtils.hasLength(uid) ? userService.get(biz,uid) : null;
+		if(user==null)
+		    return null;
+
 		System.out.println(user.getGraph()+".....................");
-		BaseTagRecommendModel model=BaseTagRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
+		BaseTagWithLabelRecommendModel model=BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
 		List<TwoTuple<String, Double>> result= model.recommend(user);
-		int length=result.size();
-		if(length<6){
-			hm=length;
-			WsArticleFilter filter=new WsArticleFilter();
-			filter.setArIds((String[]) result.stream().map(x->TableUtil.IdReverse(x.first)).toArray());
-			WsPage page=new WsPage();
-			try {
-				return fac.getArticleClient().findArticleVos(filter, page).getList();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		
-		}
-		String[] ids=new String[hm];
-		for(int i=0;i<hm;i++){
-			Random r=new Random();
-			int index=r.nextInt(length);
-			ids[i]=TableUtil.IdReverse(result.get(index).first);
-		}
+
 		try {
-			WsArticleFilter filter=new WsArticleFilter();
-			filter.setArIds(ids);
-			WsPage page=new WsPage();
-			return fac.getArticleClient().findArticleVos(filter, page).getList();
+			return getArticleFromHbaseByIds(biz,result,hm,true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -96,6 +98,119 @@ public class AnalysisAndRecommendResource {
 		return null;
 		// 获取基于用户历史画像的文章和用户订阅的文章和系统管理员推荐的一些文章加权
 //		return "callback("+new Gson().toJson(result.subList(0, hm))+")";
+	}
+    private List<ArticleVo> getArticleFromHbaseByIds(String biz,List<TwoTuple<String, Double>> result,int hm,boolean random) throws Exception {
+
+        long begin = System.currentTimeMillis();
+        int length=result.size();
+
+        if(length ==0)
+            return null;
+        System.out.println("adaptable article found:"+length);
+        if(length <=hm) {
+            hm = length;
+        }
+        List<String> ids =new ArrayList<>(hm);
+        if(random){
+            Random r=new Random();
+            for(int i=0;i<hm;i++){
+                int index=r.nextInt(length);
+                if(result.get(index)!=null)
+                    ids.add(result.get(index)._1);
+            }
+        }else {
+            for(int i=0;i<hm;i++){
+                ids = result.stream().map(x->x._1).collect(Collectors.toList());
+            }
+        }
+
+        List<Item> items = itemService.get(biz,ids,FIELDS);
+        return items.stream().map(item -> {
+            if(item.getId() ==null){
+                System.out.println("item is null:"+item);
+                return null;
+            }
+            ArticleVo vo =new ArticleVo();
+
+            vo.put("id",TableUtil.IdReverse(item.getId()));
+            vo.put("title",item.getTitle());
+            vo.put("caName",item.getCatagory());
+            try {
+                if (item.getFirstPubTime() != null) {
+                    vo.put("pubDate",DateUtils.format("YYYY-MM-dd HH:mm:ss", new Date(Long.valueOf(item.getFirstPubTime()))));
+                }
+            }catch (Exception e){
+                vo.put("pubDate",DateUtils.format("YYYY-MM-dd HH:mm:ss", new Date()));
+
+            }
+            if(item.getMeta()!=null) {
+                vo.put("source", item.getMeta().get("ogSite"));
+                vo.put("img",item.getMeta().get("img"));
+            }
+            return vo;
+        }).collect(Collectors.toList());
+
+    }
+	private List<ArticleVo> getArticleByIds(List<TwoTuple<String, Double>> result,int hm,boolean random) throws Exception {
+
+        long begin = System.currentTimeMillis();
+        int length=result.size();
+        String[] ids = null;
+        System.out.println("adaptable article found:"+length);
+        if(length <=hm) {
+            hm = length;
+        }
+        ids=new String[hm];
+        if(random){
+            Random r=new Random();
+            for(int i=0;i<hm;i++){
+                int index=r.nextInt(length);
+                if(result.get(index)!=null)
+                  ids[i]=TableUtil.IdReverse(result.get(index)._1);
+            }
+        }else {
+            for(int i=0;i<hm;i++){
+                ids[i]=TableUtil.IdReverse(result.get(i)._1);
+            }
+        }
+        try {
+            WsArticleFilter filter=new WsArticleFilter();
+            filter.setContainsContent(false);
+            filter.setArIds(ids);
+            WsPage page=new WsPage();
+            page.setPageSize(hm);
+            List<ArticleVo> articleVoList=fac.getArticleClient().findArticleVos(filter, page).getList();
+
+            for(ArticleVo ar: articleVoList){
+            	if(ar.get("pubDate")!=null)
+            	  ar.put("pubDate", DateUtils.format(null,new Date(Long.valueOf(ar.get("pubDate")))));
+			}
+            return articleVoList;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally{
+            System.out.println("cost time fetch artcle from cms:"+(System.currentTimeMillis() - begin));
+        }
+        return null;
+    }
+
+    @RequestMapping("/byCatagory/{biz}/{ssCode}/{ca}/{start}/{hm}")
+    @ResponseBody
+    public List<ArticleVo> sortByCatagory(@PathVariable("biz") String biz,@PathVariable("ssCode") String ssCode,@PathVariable("ca") String ca,@PathVariable("start") int start,@PathVariable("hm") int hm) {
+        BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
+
+        try {
+            return getArticleByIds(model.getByCatalog(ca, start, hm), hm,false);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
+	}
+    @RequestMapping("/ctxsim/{biz}/{iid}")
+	public List<ArticleVo> contextSimilar(@PathVariable String biz,@PathVariable String iid){
+		SimHash sim=new SimHash("");
+        BigInteger big;
+		return null;
 	}
 	
 
@@ -110,6 +225,8 @@ public class AnalysisAndRecommendResource {
 		String uri = "http://slave2:9999/mining/classify?biz_code="
 				+ biz_code + "&ss_code=" + ss_code + "&model=" + model;
 		String result=HttpClientResource.post(text, uri);
+		if(result ==null)
+			return "{}";
 
 		StringTokenizer strToken=new StringTokenizer(result,"()");
 		List<String> resultList=new ArrayList<>();

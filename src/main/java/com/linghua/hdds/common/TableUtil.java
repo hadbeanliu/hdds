@@ -7,7 +7,28 @@ public class TableUtil {
 	
 	private static Long MAX_VALUE_TIME=3000000000000000L;
 	private static SimpleDateFormat format=new SimpleDateFormat("yyyyMMddHH");
-	
+
+
+    public static String idReverseAndBuildWihtFourKey(String firstKey,String typeKey,String timeKey,String secondKey,String spaceMark){
+
+        return new StringBuilder(firstKey).reverse().append(spaceMark).append(typeKey).append(spaceMark).append(timeKey).append(spaceMark).append(secondKey).toString();
+    }
+
+	public static String idReverseAndBuild(String firstKey,String timeKey,String secondKey,String spaceMark){
+
+	    return new StringBuilder(firstKey).reverse().append(spaceMark).append(timeKey).append(spaceMark).append(secondKey).toString();
+    }
+    public static String idReverseAndBuild(String firstKey,String timeKey,String secondKey){
+
+        return idReverseAndBuild( firstKey, timeKey, secondKey,"_");
+    }
+    public static String idReverseAndBuildWithoutTime(String firstKey,String secondKey,String spaceMark){
+        return new StringBuilder(firstKey).reverse().append(spaceMark).append(secondKey).toString();
+    }
+    public static String idReverseAndBuild(String firstKey){
+
+        return new StringBuilder(firstKey).reverse().toString();
+    }
 	public static String getEndKey(int num,int field){
 		switch(field){
 		
@@ -22,24 +43,23 @@ public class TableUtil {
 			calendar.add(Calendar.MONTH, -1*num);;
 			String id=format.format(calendar.getTime())+"000000";
 			return IdReverse(id);
-}
+        }
 		case Calendar.DAY_OF_YEAR:{
 			Calendar calendar=Calendar.getInstance();
 			calendar.add(Calendar.DAY_OF_YEAR, -1*num);;
 			String id=format.format(calendar.getTime())+"000000";
 			return IdReverse(id);
-}
+        }
 		case Calendar.WEEK_OF_YEAR:{
 			Calendar calendar=Calendar.getInstance();
 			calendar.add(Calendar.WEEK_OF_YEAR, -1*num);;
 			String id=format.format(calendar.getTime())+"000000";
 			
 			return IdReverse(id);
-}
+        }
 		default: throw new RuntimeException("unknow field");
 		
 		}
-		
 	}
 	
 	public static String IdReverse(String id){
@@ -49,10 +69,8 @@ public class TableUtil {
 	}
 	
 	public static void main(String[] args){
-		
-		System.out.println(IdReverse(getEndKey(1, Calendar.YEAR)));
-  	  	System.out.println(TableUtil.IdReverse("982988380999966"));
-  	  	System.out.println(123123);
+
+        System.out.println(idReverseAndBuild("000000000066","20140826072122","5465465465465464"));
 
 	}
 

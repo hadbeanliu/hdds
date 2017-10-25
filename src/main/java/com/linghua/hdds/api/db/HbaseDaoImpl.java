@@ -1,24 +1,11 @@
 package com.linghua.hdds.api.db;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
-import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HConnection;
-import org.apache.hadoop.hbase.client.HConnectionManager;
-import org.apache.hadoop.hbase.client.HTableInterface;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.data.hadoop.hbase.HbaseAccessor;
 import org.springframework.data.hadoop.hbase.HbaseOperations;
@@ -107,6 +94,34 @@ public class HbaseDaoImpl extends HbaseAccessor implements HbaseOperations {
 	public void setAutoFlush(Boolean autoFlush) {
 		this.autoFlush = autoFlush;
 	}
+
+	public boolean exist(String tableName,String row,String family,String qualifier){
+        return execute(tableName, new TableCallback<Boolean>() {
+            @Override
+            public Boolean doInTable(HTableInterface table) throws Throwable {
+                Get get = new Get(row.getBytes());
+                get.addColumn(family.getBytes(),qualifier.getBytes());
+                return table.exists(get);
+            }
+        });
+    }
+
+    public boolean increments(String tableName, List<Increment> increments){
+
+	   return execute(tableName, new TableCallback<Boolean>() {
+            @Override
+            public Boolean doInTable(HTableInterface table) throws Throwable {
+                try {
+                    for (Increment increment : increments)
+                        table.increment(increment);
+                    return true;
+                }catch(IOException e){
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        });
+    }
 
 	@Override
 	public <T> T find(String tableName, String family,ResultsExtractor<T> action) {
@@ -215,7 +230,24 @@ public class HbaseDaoImpl extends HbaseAccessor implements HbaseOperations {
 			final RowMapper<T> mapper) {
 		return get(tableName, rowName, familyName, null, mapper);
 	}
-
+	public <T> T get(String tableName, final String rowName, Collection<Hcolumn> hcolumns, final RowMapper<T> mapper){
+		return execute(tableName, new TableCallback<T>() {
+			@Override
+			public T doInTable(HTableInterface table) throws Throwable {
+				Get get = new Get(rowName.getBytes(getCharset()));
+				if (hcolumns != null) {
+					for (Hcolumn col : hcolumns) {
+						if (col.getQualifier() != null) {
+							get.addColumn(col.getFamily(), col.getQualifier());
+						} else {
+							get.addFamily(col.getFamily());
+						}
+					}
+				}
+				return mapper.mapRow(table.get(get), 0);
+			}
+	});
+	}
 	@Override
 	public <T> T get(String tableName, final String rowName,
 			final String familyName, final String qualifier,
@@ -233,8 +265,7 @@ public class HbaseDaoImpl extends HbaseAccessor implements HbaseOperations {
 						get.addFamily(family);
 					}
 				}
-				Result result = htable.get(get);
-				return mapper.mapRow(result, 0);
+				return mapper.mapRow(htable.get(get), 0);
 			}
 		});
 	}
@@ -375,7 +406,6 @@ public class HbaseDaoImpl extends HbaseAccessor implements HbaseOperations {
 				addPutsAndDeletes(put, delete, e, col, Bytes.toBytes(j++));
 			}
 		} else {
-
 			put.add(col.getFamily(), qualifier, ByteUtils.toBytes(o));
 
 		}

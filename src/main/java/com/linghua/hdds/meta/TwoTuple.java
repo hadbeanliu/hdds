@@ -1,15 +1,19 @@
 package com.linghua.hdds.meta;
 
-public class TwoTuple<_1,_2> {
+public class TwoTuple<first,second> {
 	
-	public final _1 first;
-    public _2 second;
+	public final first _1;
+    public second _2;
 	
-	public TwoTuple(_1 first,_2 second){{
-		this.first=first;
-		this.second=second;
+	public TwoTuple(first _1 ,second _2 ){{
+		this._1=_1;
+		this._2=_2;
 	}
 		
+	}
+
+	public String toString(){
+		return this._1+":"+ this._2;
 	}
 
 }
