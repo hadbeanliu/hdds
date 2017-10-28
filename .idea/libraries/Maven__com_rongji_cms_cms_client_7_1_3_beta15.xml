@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.rongji.cms:cms-client:7.1.3-beta15">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/rongji/cms/cms-client/7.1.3-beta15/cms-client-7.1.3-beta15.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/rongji/cms/cms-client/7.1.3-beta15/cms-client-7.1.3-beta15-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/rongji/cms/cms-client/7.1.3-beta15/cms-client-7.1.3-beta15-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
