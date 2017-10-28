@@ -20,13 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
 import com.linghua.hdds.api.service.ItemService;
 import com.linghua.hdds.api.service.UserService;
 import com.linghua.hdds.meta.TwoTuple;
-import com.linghua.hdds.preference.model.BaseTagRecommendModel;
 import com.linghua.hdds.store.Item;
 import com.linghua.hdds.store.User;
 import com.rongji.cms.webservice.client.json.CmsClientFactory;
@@ -56,9 +54,9 @@ public class AnalysisAndRecommendResource {
         FIELDS.add(Item.FIELDS.HIS);
         FIELDS.add(Item.FIELDS.FIRSTPUBTIME);
     }
-    @RequestMapping("/rmdByT/{biz}/{ssCode}/{hm}")
-	public List<ArticleVo> recommendByTag(@PathVariable("biz") String biz,@PathVariable("ssCode") String ssCode,@PathVariable("hm") int hm,@RequestBody String[] tags){
-        if(tags ==null ||tags.length ==0) {
+    @RequestMapping("/rmdByT/{biz}/{filter}/{hm}")
+	public List<ArticleVo> recommendByTag(@PathVariable("biz") String biz,@PathVariable("filter") String filter,@PathVariable("hm") int hm,@RequestBody Map<String,Float> tags){
+        if(tags ==null ||tags.size() ==0) {
 	        return new ArrayList<>();
         }
         if(hm >10){
@@ -80,13 +78,14 @@ public class AnalysisAndRecommendResource {
 
 		int hm = 20;
         System.out.println(biz+"----"+uid+"----"+dir);
-        final User user = StringUtils.hasLength(uid) ? userService.get(biz,uid) : null;
+        String row =TableUtil.idReverseAndBuild(uid);
+        final User user = StringUtils.hasLength(row) ? userService.get(biz,row) : null;
 		if(user==null)
 		    return null;
 
 		System.out.println(user.getGraph()+".....................");
-		BaseTagWithLabelRecommendModel model=BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
-		List<TwoTuple<String, Double>> result= model.recommend(user);
+		BaseTagWithLabelRecommendModel model=BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.MONTH));
+		List<TwoTuple<String, Float>> result= model.recommend(user);
 
 		try {
 			return getArticleFromHbaseByIds(biz,result,hm,true);
@@ -99,7 +98,7 @@ public class AnalysisAndRecommendResource {
 		// 获取基于用户历史画像的文章和用户订阅的文章和系统管理员推荐的一些文章加权
 //		return "callback("+new Gson().toJson(result.subList(0, hm))+")";
 	}
-    private List<ArticleVo> getArticleFromHbaseByIds(String biz,List<TwoTuple<String, Double>> result,int hm,boolean random) throws Exception {
+    private List<ArticleVo> getArticleFromHbaseByIds(String biz,List<TwoTuple<String, Float>> result,int hm,boolean random) throws Exception {
 
         long begin = System.currentTimeMillis();
         int length=result.size();
@@ -197,13 +196,13 @@ public class AnalysisAndRecommendResource {
     @RequestMapping("/byCatagory/{biz}/{ssCode}/{ca}/{start}/{hm}")
     @ResponseBody
     public List<ArticleVo> sortByCatagory(@PathVariable("biz") String biz,@PathVariable("ssCode") String ssCode,@PathVariable("ca") String ca,@PathVariable("start") int start,@PathVariable("hm") int hm) {
-        BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
+        BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.MONTH));
 
-        try {
-            return getArticleByIds(model.getByCatalog(ca, start, hm), hm,false);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+//        try {
+//            return getArticleByIds(model.getByCatalog(ca, start, hm), hm,false);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
         return null;
 	}
     @RequestMapping("/ctxsim/{biz}/{iid}")

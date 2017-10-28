@@ -1,5 +1,7 @@
 package com.linghua.hdds.preference.model;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import com.linghua.hdds.meta.TwoTuple;
 import com.linghua.hdds.store.Item;
@@ -16,6 +18,7 @@ import java.util.*;
 
 
 public class BaseTagWithLabelRecommendModel {
+    private static final String tagsIndexPath = "/home/hadoop/result/tagsIndex.model";
 
 	private static BaseTagWithLabelRecommendModel model;
 	private Map<String, Integer> indexStringModel;
@@ -25,78 +28,80 @@ public class BaseTagWithLabelRecommendModel {
 	
 	public static BaseTagWithLabelRecommendModel getInstance(String stopRow){
 		if(model==null)
-			model=new BaseTagWithLabelRecommendModel(null, stopRow);
+			model=new BaseTagWithLabelRecommendModel(stopRow);
 			
 		return model;
 	}
+
+	private void load(String path){
+        String tmp ="";
+        try {
+            BufferedReader read =new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))));
+
+            int cnt=0;
+            while((tmp=read.readLine())!=null){
+                String[] kv = tmp.split("/004");
+                cnt++;
+                indexStringModel.put(kv[0],Integer.valueOf(kv[1]));
+            }
+            System.out.println("cnt:"+cnt);
+            read.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("tmp...."+tmp);
+        }
+    }
 
 	public static void reload(){
         model = null;
     }
 
-	private BaseTagWithLabelRecommendModel(Map<String, Integer> indexStringModel,String stopRow) {
+	private BaseTagWithLabelRecommendModel(String stopRow) {
 
-		if (indexStringModel == null) {
-
-			File f = new File("/home/hadoop/result/tags.json");
-			indexStringModel=new HashMap<>();
-			
-			try {
-				InputStreamReader read=new InputStreamReader(new FileInputStream(f), "utf-8");
-//				read.read(content);
-				JsonReader jreader=new JsonReader(read);
-				jreader.setLenient(true);
-				jreader.beginObject();
-				
-				while(jreader.hasNext()){
-
-					indexStringModel.put(jreader.nextName(), jreader.nextInt());
-				}
-				jreader.endObject();	
-				jreader.close();
-				read.close();
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}finally{
-			}
+		if (this.indexStringModel == null) {
+            this.indexStringModel=new HashMap<>();
+			load(tagsIndexPath);
 		}
 
-		this.indexStringModel = indexStringModel;
         this.tagLength = indexStringModel.size();
-		if(mtrix==null){
+        System.out.println(tagLength);
+        if(mtrix==null){
 			mtrix=new HashMap<>();
 			Connection conn=null;
 			Table table=null;
 			try {
 				conn=ConnectionFactory.createConnection();
-				
+				Gson gson =new Gson();
 				table=conn.getTable(TableName.valueOf( "headlines:item_meta_table"));
 				
 				Scan scan=new Scan();
 				scan.setStopRow(stopRow.getBytes());
-				scan.addFamily("kw".getBytes());
+				final byte[] sys= "sys".getBytes();
+				final byte[] tags ="tags".getBytes();
+				scan.addColumn("sys".getBytes(),"tags".getBytes());
 
 				scan.addColumn("f".getBytes(),"lb".getBytes());
 				ResultScanner rs=table.getScanner(scan);
 				Iterator<Result> rit=rs.iterator();
+				Random random=new Random();
 				while(rit.hasNext()){
 					Result r=rit.next();
 					Map<Integer, Float> kw=new HashMap<>();
 					String label=null;
-					for(Cell cell:r.listCells()){
-					    String q=Bytes.toString(CellUtil.cloneQualifier(cell));
-					    if(q.equals("lb")){
-					        label=Bytes.toString(CellUtil.cloneValue(cell));
-					        continue;
-					    }
-					    Object idx=indexStringModel.get(q);
-					    if(idx!=null){
-					    	kw.put((int)idx, Bytes.toFloat(CellUtil.cloneValue(cell)));
-					    }
-					}
+
+					if(r.isEmpty()||r.size()!=2){
+					    continue;
+                    }
+                    Map <String,Float> t= gson.fromJson(Bytes.toString(r.getValue(sys,tags)),new TypeToken<Map<String,Float>>(){}.getType());
+                    for(Map.Entry<String,Float> kv:t.entrySet()){
+                        kw.put(indexStringModel.getOrDefault(kv.getKey(),random.nextInt(tagLength)),kv.getValue());
+                    }
+
+                    label = Bytes.toString(r.getValue("f".getBytes(),"lb".getBytes()));
 					if(kw.size()!=0) {
+
 						Map<String,SparseVector> vectorMap= mtrix.getOrDefault(label,new HashMap<String,SparseVector>());
                         vectorMap.put(Bytes.toString(r.getRow()), SparseVector.toSparseVector(kw));
                         mtrix.put(label,vectorMap);
@@ -118,65 +123,45 @@ public class BaseTagWithLabelRecommendModel {
 				
 				
 			}
-			
-			
 		}
 		
 		System.out.println("length of item to recommend:::"+mtrix.size());
 		
 	}
 
-//	public List<TwoTuple<String, Double>> recommendByItem(Item i) {
-//		Map<Integer, Double> vector = new HashMap<>();
-//		i.getKeyword().forEach((l, r) -> vector.put(indexStringModel.get(l), Double.valueOf(r)));
-//		DenseVector iv = DenseVector.toDenseVector(indexStringModel.size(), vector);
-//
-//		List<TwoTuple<String, Double>> result = new ArrayList<>();
-//		long begin=System.currentTimeMillis();
-//		mtrix.entrySet().parallelStream().forEach(entry -> {
-//			double y = iv.axpy(1, 1, entry.getValue());
-//			if (y > 0) {
-//				result.add(new TwoTuple<String, Double>(entry.getKey(), y));
-//			}
-//
-//		});
-//		System.out.println("time............."+(System.currentTimeMillis()-begin));
-//		return result;
-//	}
-
-	public List<TwoTuple<String, Double>> recommend(String[] keys,List<String> filter) {
-        Map<Integer, Double> vector = new HashMap<>();
-	    for(String k:keys){
+	public List<TwoTuple<String, Float>> recommend(Map<String,Float> keys,List<String> filter) {
+        Map<Integer, Float> vector = new HashMap<>();
+	    for(String k:keys.keySet()){
 	        int index = indexStringModel.getOrDefault(k,-1);
 	        if(index != -1)
-	           vector.put(indexStringModel.get(k),1.0);
+	           vector.put(indexStringModel.get(k),keys.get(k));
         }
         DenseVector vec =DenseVector.toDenseVector(tagLength,vector);
 
 		return axpy(vec,filter);
 	}
 
-	private List<TwoTuple<String, Double>> axpy(DenseVector vec,Collection<String> filter){
+	private List<TwoTuple<String, Float>> axpy(DenseVector vec,Collection<String> filter){
         long begin = System.currentTimeMillis();
-        final double a= vec.values ==null? 0:1;
+        final float a= vec.values ==null? 0:1;
 
-			List<TwoTuple<String, Double>> result =new ArrayList<>();
+			List<TwoTuple<String, Float>> result =new ArrayList<>();
 			if(filter ==null || filter.size() ==0) {
                 mtrix.values().forEach(entry -> {
                     entry.entrySet().parallelStream().forEach( kv -> {
-                        double y = vec.axpy(a, 1, kv.getValue());
+                        float y = vec.axpy(a, 1, kv.getValue());
                         if (y > 0) {
-                            result.add(new TwoTuple<String, Double>(kv.getKey(), y));
+                            result.add(new TwoTuple<String, Float>(kv.getKey(), y));
                         }
                     });
                 });
             } else {
-			    for (String label : filter) {
+				for (String label : filter) {
 				if (mtrix.containsKey(label)) {
 					mtrix.get(label).entrySet().parallelStream().forEach(entry -> {
-						double y = vec.axpy(a, 1, entry.getValue());
+						float y = vec.axpy(a, 1, entry.getValue());
 						if (y > 0) {
-							result.add(new TwoTuple<String, Double>(entry.getKey(), y));
+							result.add(new TwoTuple<String, Float>(entry.getKey(), y));
 						}
 
 					});
@@ -188,12 +173,12 @@ public class BaseTagWithLabelRecommendModel {
 
 	}
 
-	public List<TwoTuple<String, Double>> recommend(User u) {
-		Map<Integer, Double> vector = new HashMap<>();
+	public List<TwoTuple<String, Float>> recommend(User u) {
+		Map<Integer, Float> vector = new HashMap<>();
         Collection<String> sub = u.getSubscription()==null ? null:u.getSubscription().keySet();
 
         if(u.getGraph()!=null) {
-            u.getGraph().forEach((l, r) -> vector.put(indexStringModel.getOrDefault(l, 0), Double.valueOf(r)));
+            u.getGraph().forEach((l, r) -> vector.put(indexStringModel.getOrDefault(l, 0), Float.valueOf(r)));
             DenseVector uv = DenseVector.toDenseVector(tagLength, vector);
             return axpy(uv,sub);
         }else {
@@ -203,12 +188,12 @@ public class BaseTagWithLabelRecommendModel {
         }
 	}
 
-    public List<TwoTuple<String, Double>> getByCatalog(String label,int starRow,int hm) {
-        List<TwoTuple<String, Double>> result =new ArrayList<>();
+    public List<TwoTuple<String, Float>> getByCatalog(String label,int starRow,int hm) {
+        List<TwoTuple<String, Float>> result =new ArrayList<>();
         int i=0;
         System.out.println(label);
         Set<String> ids = mtrix.get(label).keySet();
-        System.out.println("number of item may be find alll:"+ids.size());
+        System.out.println("number of item may be find all:"+ids.size());
         for(String k:ids){
             if(i < starRow){
                 i++;
@@ -216,7 +201,7 @@ public class BaseTagWithLabelRecommendModel {
             }
             if(result.size() >hm)
                 return result;
-            result.add(new TwoTuple<>(k,1.0d));
+            result.add(new TwoTuple<String, Float>(k,1.0f));
         }
 
 	    return result;

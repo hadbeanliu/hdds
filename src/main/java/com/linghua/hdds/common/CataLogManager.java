@@ -108,9 +108,10 @@ public class CataLogManager {
 							nodes.put(cata.getCaId(), new Node(cata.getCaPid(), cata.getCaId(), cata.getCaName()));
 							tmpNodes.put(cata.getCaId(), new Node(cata.getCaPid(), cata.getCaId(), cata.getCaName()));
 						}
-						if(siteId.equals("190014"))
-						   bizMapping.put("headlines", catalogs);
-						else if(siteId.equals("190019")){
+						if(siteId.equals("190014")) {
+                            catalogs.remove("医疗");
+                            bizMapping.put("headlines", catalogs);
+                        }else if(siteId.equals("190019")){
 							bizMapping.put("govheadlines", catalogs);
 						}else{
 							bizMapping.put(siteId, catalogs);

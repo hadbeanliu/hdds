@@ -288,9 +288,7 @@ public class ItemController {
             tmpbiz="headlines";
         }
         long begin =System.currentTimeMillis();
-        System.out.println(System.currentTimeMillis()-begin);
         Item item = itemService.get(tmpbiz, TableUtil.IdReverse(iid));
-        System.out.println(System.currentTimeMillis()-begin);
 
         if(item==null)
 			return "{}";
@@ -307,7 +305,6 @@ public class ItemController {
 			ar.put("tag", gson.toJson(item.getKeyword()));
 			ar.put("manualScore", String.valueOf(item.getManualScore()));
 			if(item.getContent() ==null){
-                System.out.println("null content"+iid);
                 ArticleClient client = cmsFactory.getArticleClient();
 
                 WsArticleFilter filter = new WsArticleFilter();
@@ -360,7 +357,6 @@ public class ItemController {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-            System.out.println(System.currentTimeMillis()-begin);
 
             return gson.toJson(ar);
 
@@ -451,8 +447,11 @@ public class ItemController {
 				for (String tag : keyword.keySet()) {
 					keyword.put(tag, Float.valueOf(NumberFormat.decimalFormat(keyword.get(tag) / count)));
 				}
-				item.setKeyword(keyword);
-				article.put("tags", arTags.toString().replaceAll(" ", "##"));
+				Map<String,String> sys=new HashMap<>();
+				sys.put("tags",gson.toJson(keyword));
+				item.setSys(sys);
+//				item.setKeyword(keyword);
+//				article.put("tags", arTags.toString().replaceAll(" ", "##"));
 			}
 			//add some specifical tag
 			Map<String,String> sysSet=new HashMap<>(4);
@@ -515,9 +514,6 @@ public class ItemController {
                 tmpbiz="headlines";
             }
 			if (status.getRet() == 0) {
-				if (item.getKeyword().size() > 0) {
-					itemService.delete(tmpbiz, TableUtil.IdReverse(iid),Item.HBASE_MAPPING.get(Item.FIELDS.KEYWORD.getIndex()));
-				}
 				itemService.put(tmpbiz, TableUtil.IdReverse(status.getRetValue()), item);
 				LOG.info("update: ["+iid+"] success");
 				return "success";
@@ -877,6 +873,10 @@ public class ItemController {
                         sys.put("city",pageMap.get("city"));
                     page.setSys(sys);
                 }
+                if(pageMap.get("agency")!=null){
+                    sys.put("agency",pageMap.get("agency"));
+                    page.setSys(sys);
+                }
                 try{
                     ExetractorKeyword.exetract(page);
                     if(page.getSys()!=null&&!page.getSys().isEmpty()){
@@ -903,10 +903,6 @@ public class ItemController {
                         }else if(pageMap.get("adapt")!=null){
                             ar.put("agency",pageMap.get("adapt"));
                         }
-                    }
-                    if(catagory.equals("互动留言")){
-                        System.out.println(gson.toJson(page.getSys()));
-                        System.out.println(gson.toJson(ar));
                     }
                 }catch (Exception e){
                     e.printStackTrace();

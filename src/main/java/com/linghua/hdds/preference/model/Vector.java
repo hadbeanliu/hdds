@@ -11,16 +11,16 @@ class SparseVector {
 
     public int nnz;
     public int[] indics;
-    public double[] values;
+    public float[] values;
 
     public SparseVector() {
     }
 
-    private SparseVector(int nnz, int[] indics, double[] values) {
+    private SparseVector(int nnz, int[] indics, float[] values) {
         this.nnz = nnz;
         if (nnz == 0) {
             this.indics = new int[0];
-            this.values = new double[0];
+            this.values = new float[0];
         }
     }
 
@@ -31,7 +31,7 @@ class SparseVector {
         SparseVector sparse = new SparseVector();
         sparse.nnz = vector.size();
         sparse.indics = new int[sparse.nnz];
-        sparse.values = new double[sparse.nnz];
+        sparse.values = new float[sparse.nnz];
         int i = 0;
         for (Map.Entry<Integer, Float> entry : vector.entrySet()) {
             sparse.indics[i] = entry.getKey();
@@ -43,7 +43,7 @@ class SparseVector {
     }
 
     // y := alpha*A +beta*Y
-    private double axpy(double a, double b, SparseVector y) {
+    private float axpy(float a, float b, SparseVector y) {
 
         return 0;
     }
@@ -52,20 +52,20 @@ class SparseVector {
 
 class DenseVector {
 
-    double[] values;
+    float[] values;
 
-    public static DenseVector toDenseVector(int length, Map<Integer, Double> vector) {
+    public static DenseVector toDenseVector(int length, Map<Integer, Float> vector) {
 
         int size = vector.size();
         if (size <= length) {
             DenseVector dense = new DenseVector();
-            dense.values = new double[length];
+            dense.values = new float[length];
             vector.forEach((l, r) -> dense.values[l] = r);
             return dense;
         }
 
         DenseVector dense = new DenseVector();
-        dense.values = new double[length];
+        dense.values = new float[length];
         vector.forEach((l, r) -> {
             if (l < length)
                 dense.values[l] = r;
@@ -74,7 +74,7 @@ class DenseVector {
 
     }
 
-    public double axpy(double a, double b, SparseVector y) {
+    public float axpy(float a, float b, SparseVector y) {
         if (a == 0 && b == 0) {
 
             return 0;
@@ -88,10 +88,10 @@ class DenseVector {
 
         int yLength = y.indics.length;
         int[] yIndics = y.indics;
-        double[] yValues = y.values;
+        float[] yValues = y.values;
 
         int i = 0;
-        double r = 0;
+        float r = 0;
         while (i < yLength) {
             r += values[yIndics[i]] * yValues[i];
             i+=1;

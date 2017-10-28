@@ -8,13 +8,13 @@ import com.linghua.hdds.store.Item;
 import org.lionsoul.jcseg.tokenizer.core.JcsegException;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class ExetractorKeyword {
+public class ExetractorKeyword2 {
 
-
-    private static Random r=new Random();
 
     public static void exetract(Item item){
 
@@ -22,8 +22,6 @@ public class ExetractorKeyword {
         try {
             Map<String,String> sysSet=item.getSys() ==null ?new HashMap<>():item.getSys();
             List<TwoTuple<String,String>> words = extractor.simpleTokenizeWithPart(item.getContent());
-            if(words == null)
-                return ;
             List<String> toTrain =new ArrayList<>();
             Map<String,String> wordWityType = new HashMap<>();
             for(TwoTuple<String,String> w: words ){
@@ -39,7 +37,6 @@ public class ExetractorKeyword {
             double min = 6.5 - result.size()/10;
             String location=sysSet.get("location")==null? null:sysSet.get("location");
             Float placeValue=0f;
-            boolean hasLocate =location==null;
             for(TwoTuple<String,Float> r:result){
                 String speech = wordWityType.get(r._1);
                 if(speech!=null&&speech.startsWith("n")) {
@@ -52,7 +49,7 @@ public class ExetractorKeyword {
                             v = v+","+r._1;
                             keyform.put(speech,v);
                         }
-                        if(hasLocate && speech.equals("ns")){
+                        if(location==null && speech.equals("ns")){
                             if(r._2>placeValue){
                                 location =r._1;
                                 placeValue=r._2;
@@ -61,40 +58,14 @@ public class ExetractorKeyword {
                     }
                 }
             }
-
-            for(String speech: keyform.keySet()){
-                String[] titleTags = keyform.get(speech).split(",");
-                for(String t:titleTags){
-                    if(t.length()>0&&tags.get(t)==null){
-                        tags.put(t,0.5f);
-                    }
-                }
-            }
-            if(item.getKeyword()!=null){
-                for(String key:item.getKeyword().keySet()){
-
-                }
-            }
-
-            if(tags.size()>0){
-                if(tags.size()>5){
-                     List<Map.Entry<String,Float>> subList=new ArrayList<>(tags.entrySet()).stream().sorted((x,y)->y.getValue().compareTo(x.getValue())).collect(Collectors.toList()).subList(0,5);
-                     tags.clear();
-                     subList.stream().forEach(kv->tags.put(kv.getKey(),kv.getValue()));
-                }
+            if(tags.size()>0)
               sysSet.put("tags",gson.toJson(tags));
-            }
-            for(String k:keyform.keySet()) {
-                if(k.equals("nt")&&sysSet.get("agency")==null)
-                  sysSet.put("agency",keyform.get("nt"));
-                else if(k.equals("nr"))
-                  sysSet.put("figure",keyform.get("nr"));
-                else if(k.equals("produce"))
-                    sysSet.put("produce",keyform.get("np"));
-            }
+            sysSet.putAll(keyform);
+            System.out.println("~~~~~"+location);
 
-            if(false&&location!=null){
+            if(location!=null){
                 String xy=getXY(location);
+                System.out.println("~~~~~"+location+"--"+xy);
                 if(xy!=null){
                  sysSet.put("xy",getXY(location));
                  sysSet.put("place",location);
@@ -116,7 +87,7 @@ public class ExetractorKeyword {
 
         try{
         GeoMapResponse geomap = gson.fromJson(HttpClientResource.post(null,
-                "http://restapi.amap.com/v3/geocode/geo?address="+place+"&output=json&key=714c13cae8b905bd291fe6b7645d8b0e"),GeoMapResponse.class);
+                "http://restapi.amap.com/v3/geocode/geo?address="+place+"&city=福州&output=json&key=714c13cae8b905bd291fe6b7645d8b0e"),GeoMapResponse.class);
         if(geomap.getStatus()==1&&geomap.getCount()>0) {
             return geomap.getLocation();
 
@@ -151,7 +122,7 @@ public class ExetractorKeyword {
                 "此外，伊曼纽还要求市议会拨款50万元，购买一万个黑色附轮子的新垃圾筒，以替换那些被老鼠啃过的旧筒。\n" +
                 "\n" +
                 "芝加哥街道及卫生清洁局发言人玛甘（sarah mcgann）表示，2017年至今，市府相关单位共接到3.9万个鼠患电话，这些申诉都在五天内获得处理。她提醒市民，驱除老鼠的最佳方法就是将放在巷子及院子里的垃圾盖好、封好。");
-        ExetractorKeyword e=new ExetractorKeyword();
+        ExetractorKeyword2 e=new ExetractorKeyword2();
         e.exetract(item);
     }
 

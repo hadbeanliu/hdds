@@ -44,10 +44,10 @@ public class UserController {
 		vo.exchange(u);
         System.out.println(new Gson().toJson(vo));
         System.out.println(new Gson().toJson(u));
-
+        String row = TableUtil.idReverseAndBuild(uid);
         if(u.getSubscription()!=null)
-			this.dao.delete(biz, u.getId(), User.HBASE_MAPPING.get(User.FIELDS.SUBSCRIPTION.getIndex()));
-        this.dao.put(biz, TableUtil.idReverseAndBuild(uid), u);
+			this.dao.delete(biz, row, User.HBASE_MAPPING.get(User.FIELDS.SUBSCRIPTION.getIndex()));
+        this.dao.put(biz, row, u);
 
 		return "success";
 	}
