@@ -23,6 +23,8 @@ public class GetXYFromGeode {
    public static void main(String[] args) {
             byte[] family ="sys".getBytes();
             byte[] q="xy".getBytes();
+            byte[] city="city".getBytes();
+            byte[] place ="place".getBytes();
             int cnt =0;
         try {
             List<String> badLine=new ArrayList<>();
@@ -30,6 +32,7 @@ public class GetXYFromGeode {
             Scan scan =new Scan();
 
             scan.addColumn("sys".getBytes(),"place".getBytes());
+            scan.addColumn("sys".getBytes(),"city".getBytes());
             Filter filter =new SingleColumnValueFilter("p".getBytes(),"lb".getBytes(), CompareFilter.CompareOp.EQUAL,"互动留言".getBytes());
             scan.setFilter(filter);
             Iterator<Result> rs = table.getScanner(scan).iterator();
@@ -38,7 +41,7 @@ public class GetXYFromGeode {
                 Result r =rs.next();
                 if(!r.isEmpty()){
                     String location = Bytes.toString(r.getValue("sys".getBytes(),"location".getBytes()));
-                    String xy =ExetractorKeyword.getXY(location);
+                    String xy =ExetractorKeyword.getXYFromBaiduMap(location,null,null);
                     if(xy!=null){
                         Put put =new Put(r.getRow());
                         put.addColumn(family,q,xy.getBytes());
@@ -50,14 +53,12 @@ public class GetXYFromGeode {
                         putList.clear();
                     }
                 }
-
-
             }
             table.put(putList);
             cnt+=putList.size();
             System.out.println("success get "+cnt+"---bad get"+ badLine.size());
             table.close();
-            PrintWriter write =new PrintWriter(new FileOutputStream(new File("/home/hadoop/result/badLine.txt")));
+            PrintWriter write =new PrintWriter(new FileOutputStream(new File("/home/hadoop/result/placeCount.txt")));
             for(String s:badLine)
                 write.println(s);
             write.flush();

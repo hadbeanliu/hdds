@@ -1,7 +1,7 @@
 package com.linghua.hdds.meta;
 
 public enum ActionType {
-    COLLECT(1,"clt"),DISCOLLECT(-1,"clt"),VIEW(1,"v"),LIKE(1,"lk"),DISLIKE(-1,"lk"),SHARE(1,"sh"),FOCUS(1,"fc");
+    COLLECT(1,"clt"),DISCOLLECT(-1,"clt"),VIEW(1,"v"),LIKE(1,"lk"),DISLIKE(-1,"lk"),SHARE(1,"sh"),FOCUS(1,"fc"),UNFOCUS(-1,"fc");
 
     private String name;
     private int index;

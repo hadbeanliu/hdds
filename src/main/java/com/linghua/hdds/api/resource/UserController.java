@@ -145,15 +145,15 @@ public class UserController {
 
 	@RequestMapping(value="/getConfig/{biz_code}/{uid}/{pid}")
 	@ResponseBody
-	public String getUserConfig(@PathVariable("uid") String uid, @PathVariable("biz_code") String biz_code, @PathVariable("pid") String pid){
+	public List<Node> getUserConfig(@PathVariable("uid") String uid, @PathVariable("biz_code") String biz_code, @PathVariable("pid") String pid){
 		Assert.hasLength(pid,"不合法的用户");
-		if(pid ==null || "root".equals(pid)){
-            pid = "root";
+		if(pid.equals("all")){
+            return CataLogManager.getCatalogTree(pid);
         }else pid = TableUtil.idReverseAndBuild(pid);
 
 		User u = this.dao.get(biz_code, pid);
 		if( u!=null && u.getInfo()!=null && u.getInfo().get("config")!=null)
-		    return (String)u.getInfo().get("config");
+		    return new Gson().fromJson((String)u.getInfo().get("config"),new TypeToken<List<Node>>(){}.getType());
 		return null;
 	}
 

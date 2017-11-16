@@ -10,6 +10,7 @@ import com.rongji.cms.webservice.client.json.ArticleClient;
 import com.rongji.cms.webservice.domain.WsArticleFilter;
 import com.rongji.cms.webservice.domain.WsArticleSynData;
 import com.rongji.cms.webservice.domain.WsPage;
+import org.lionsoul.jcseg.tokenizer.core.JcsegException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.ws.rs.QueryParam;
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -46,6 +48,14 @@ public class TestController {
         Assert.notNull(iid, "item id must be required!");
         Assert.notNull(biz, "biz_code must be required!");
         Item item = itemService.get(biz, TableUtil.IdReverse(iid));
+        MainWordExtractor extractor = MainWordExtractor.getInstance();
+        try {
+            System.out.println(extractor.simpleTokenizeWithPart(item.getContent()));
+        } catch (JcsegException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         ExetractorKeyword.exetract(item);
         return new Gson().toJson(item);
     }
@@ -59,6 +69,17 @@ public class TestController {
 
         return new Gson().toJson(item);
     }
+    @RequestMapping("/getbaxy/{address}/{city}")
+    @ResponseBody
+    public String getXYFromBadu(@PathVariable(value = "address") String address, @PathVariable(value = "city") String city) {
+
+        String req = "http://api.map.baidu.com/geocoder/v2/?output=json&ak=4G9twNlyjRwRnvq3MOSGNoE6XSXZnGME&address="+address+"&city="+city;
+        System.out.println(req);
+        String res = HttpClientResource.post(null,req);
+
+        return res;
+    }
+
 
     @RequestMapping("/caId/catalog/{biz}/{site}")
     public String getCaNameAndId(@PathVariable String biz,@PathVariable String site){

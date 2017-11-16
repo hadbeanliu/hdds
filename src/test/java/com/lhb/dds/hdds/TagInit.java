@@ -12,6 +12,9 @@ import java.util.*;
 public class TagInit {
 
     public static void main(String[] args) throws IOException {
+
+        String [] tables = {"headlines:item_meta_table","govheadlines:item_meta_table"};
+
         Gson gson = new Gson();
         Table table = ConnectionFactory.createConnection().getTable(TableName.valueOf("headlines:item_meta_table"));
         Scan scan =new Scan();

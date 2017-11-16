@@ -188,7 +188,11 @@ public class ItemController {
                         if(extractor.getWord(word._1,0)==null)
                             sb.append(" border-style");
 						sb.append(" np\">").append(word._1).append("</em>");
-					} else
+					} else if (t.startsWith("fw")) {
+                        if(extractor.getWord(word._1,0)==null)
+                            sb.append(" border-style");
+                        sb.append(" fw\">").append(word._1).append("</em>");
+                    } else
 						sb.append("\">").append(word._1).append("</em>");
 					word._2 = sb.toString();
 				}
@@ -308,15 +312,24 @@ public class ItemController {
                 ArticleClient client = cmsFactory.getArticleClient();
 
                 WsArticleFilter filter = new WsArticleFilter();
-
-                filter.setArIds(iid);
+				System.out.println("item is null,  reGet from cms:"+iid);
+				filter.setArIds(iid);
                 WsPage page = new WsPage();
                 ArticleVo article = client.findArticleVos(filter, page).getList().get(0);
                 String content = HtmlParser.delHTMLTag(article.get("content"));
                 Item i=new Item();
                 i.setContent(content);
+                if(i.getTitle() ==null){
+                  i.setTitle(article.get("title"));
+                  i.setCatagory(article.get("caName"));
+                  i.setCatagoryId(article.get("caId"));
+                  i.setFirstPubTime(article.get("createTime"));
+                  i.setFirstPubTime(article.get("pubDate"));
+                  ExetractorKeyword.exetract(i);
+//                  i.setFirstPubTime(article.get("pub"));
+                }
                 this.itemService.put(biz_code,TableUtil.IdReverse(iid),i);
-                item.setContent(content);
+                item = i;
 			}
             ar.put("text", item.getContent());
             if(item.getSys()!=null){
@@ -426,7 +439,9 @@ public class ItemController {
 				item.setTitle(vo.getTitle());
 			}
 			// edit tags
-			if (!StringUtils.isEmpty(vo.getTag())) {
+            Map<String,String> sysSet=new HashMap<>(5);
+
+            if (!StringUtils.isEmpty(vo.getTag())) {
 				StringBuffer arTags = new StringBuffer();
 				Map<String, Float> keyword = new HashMap<>();
 				float count = 0;
@@ -447,14 +462,12 @@ public class ItemController {
 				for (String tag : keyword.keySet()) {
 					keyword.put(tag, Float.valueOf(NumberFormat.decimalFormat(keyword.get(tag) / count)));
 				}
-				Map<String,String> sys=new HashMap<>();
-				sys.put("tags",gson.toJson(keyword));
-				item.setSys(sys);
+                sysSet.put("tags",gson.toJson(keyword));
+				item.setSys(sysSet);
 //				item.setKeyword(keyword);
 //				article.put("tags", arTags.toString().replaceAll(" ", "##"));
 			}
 			//add some specifical tag
-			Map<String,String> sysSet=new HashMap<>(4);
 			if(vo.getNtTag()!=null&&vo.getNtTag().length>0){
                 StringBuilder sb=new StringBuilder();
 
@@ -490,8 +503,6 @@ public class ItemController {
                     sysSet.put("xy",xy);
                     article.put("latalng",xy.split(",")[1]+","+xy.split(",")[0]);
                 }
-
-
 			}
 			if(vo.getNpTag()!=null&&vo.getNpTag().length>0){
 				StringBuilder sb=new StringBuilder();
@@ -875,8 +886,10 @@ public class ItemController {
                 }
                 if(pageMap.get("agency")!=null){
                     sys.put("agency",pageMap.get("agency"));
-                    page.setSys(sys);
+                }else if(pageMap.get("dept")!=null){
+                    sys.put("agency",pageMap.get("dept"));
                 }
+                page.setSys(sys);
                 try{
                     ExetractorKeyword.exetract(page);
                     if(page.getSys()!=null&&!page.getSys().isEmpty()){
@@ -900,8 +913,8 @@ public class ItemController {
                         }
                         if(pageMap.get("agency")!=null){
                             ar.put("agency",pageMap.get("agency"));
-                        }else if(pageMap.get("adapt")!=null){
-                            ar.put("agency",pageMap.get("adapt"));
+                        }else if(pageMap.get("dept")!=null){
+                            ar.put("agency",pageMap.get("dept"));
                         }
                     }
                 }catch (Exception e){

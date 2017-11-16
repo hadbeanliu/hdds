@@ -222,10 +222,21 @@ public class MainWordExtractor {
         while ((word = newTokenizerSeg.next()) != null) {
 //			if (word.getPartSpeech() == null)
 //				continue;
-//			String speech=word.getPartSpeech()[0];
 
-//			if(dic.get(ILexicon.CJK_WORD, word.getValue())!=null||speech.equals("en"))
-            result.add(new TwoTuple<String, String>(word.getValue(), word.getPartSpeech() == null ? null : word.getPartSpeech()[0]));
+            if(word.getPartSpeech() != null){
+                if (word.getPartSpeech()[0].equals("en")){
+                    IWord iWord = getWord(word.getValue(),1);
+                    if(iWord==null){
+                        result.add(new TwoTuple<String, String>(word.getValue(), "en"));
+                    }else {
+                        result.add(new TwoTuple<String, String>(word.getValue(), iWord.getPartSpeech()[0]));
+                    }
+                }else {
+                    result.add(new TwoTuple<String, String>(word.getValue(), word.getPartSpeech()[0]));
+                }
+            }else {
+                result.add(new TwoTuple<String, String>(word.getValue(), null));
+            }
         }
 
         return result;

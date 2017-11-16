@@ -21,16 +21,23 @@ public class BaseTagWithLabelRecommendModel {
     private static final String tagsIndexPath = "/home/hadoop/result/tagsIndex.model";
 
 	private static BaseTagWithLabelRecommendModel model;
+	private static Map<String,BaseTagWithLabelRecommendModel> models=new HashMap<>();
 	private Map<String, Integer> indexStringModel;
 	private int tagLength =0;
 
 	private Map<String,Map<String, SparseVector>> mtrix;
 	
 	public static BaseTagWithLabelRecommendModel getInstance(String stopRow){
-		if(model==null)
-			model=new BaseTagWithLabelRecommendModel(stopRow);
-			
-		return model;
+		return getInstance("headlines",stopRow);
+	}
+
+	public static BaseTagWithLabelRecommendModel getInstance(String biz,String stopRow){
+	    if(models.get(biz)!=null){
+	        return models.get(biz);
+        }else {
+	        models.put(biz,new BaseTagWithLabelRecommendModel(biz,stopRow));
+        }
+		return models.get(biz);
 	}
 
 	private void load(String path){
@@ -58,7 +65,7 @@ public class BaseTagWithLabelRecommendModel {
         model = null;
     }
 
-	private BaseTagWithLabelRecommendModel(String stopRow) {
+	private BaseTagWithLabelRecommendModel(String biz,String stopRow) {
 
 		if (this.indexStringModel == null) {
             this.indexStringModel=new HashMap<>();
@@ -74,7 +81,7 @@ public class BaseTagWithLabelRecommendModel {
 			try {
 				conn=ConnectionFactory.createConnection();
 				Gson gson =new Gson();
-				table=conn.getTable(TableName.valueOf( "headlines:item_meta_table"));
+				table=conn.getTable(TableName.valueOf( biz+":item_meta_table"));
 				
 				Scan scan=new Scan();
 				scan.setStopRow(stopRow.getBytes());
