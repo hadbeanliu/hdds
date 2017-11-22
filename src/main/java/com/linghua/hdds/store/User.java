@@ -16,7 +16,7 @@ public class User implements BeanTemplate {
 		HBASE_MAPPING.put(1, new Hcolumn("g".getBytes(), Type.LONG));
 		HBASE_MAPPING.put(2, new Hcolumn("r".getBytes(), Type.STRING));
 		HBASE_MAPPING.put(3, new Hcolumn("rec".getBytes(), Type.FLOAT));
-		HBASE_MAPPING.put(4, new Hcolumn("hbv".getBytes(), Type.STRING));
+		HBASE_MAPPING.put(4, new Hcolumn("bhv".getBytes(), Type.LONG));
 		HBASE_MAPPING.put(5, new Hcolumn("mk".getBytes(), Type.STRING));
 		HBASE_MAPPING.put(6, new Hcolumn("dy".getBytes(), Type.FLOAT));
 
@@ -108,7 +108,7 @@ public class User implements BeanTemplate {
 			recommend = (Map<String, String>) o;
 			break;
 		case 4:
-			behavior = (Map<String, String>) o;
+			behavior = (Map<String, Long>) o;
 			break;
 
 		case 5:
@@ -131,7 +131,7 @@ public class User implements BeanTemplate {
 	private Map<String, String> recored;
 	private Map<String, String> recommend;
 
-	private Map<String, String> behavior;
+	private Map<String, Long> behavior;
 
 	private Map<String, String> mark;
 	
@@ -181,12 +181,12 @@ public class User implements BeanTemplate {
 		this.recommend = recommend;
 	}
 
-	public Map<String, String> getBehavior() {
+	public Map<String, Long> getBehavior() {
 
 		return behavior;
 	}
 
-	public void setBehavior(Map<String, String> behavior) {
+	public void setBehavior(Map<String, Long> behavior) {
 
 		this.behavior = behavior;
 	}

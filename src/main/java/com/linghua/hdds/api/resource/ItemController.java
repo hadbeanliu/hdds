@@ -334,7 +334,7 @@ public class ItemController {
             ar.put("text", item.getContent());
             if(item.getSys()!=null){
                 ar.putAll(item.getSys());
-                ar.put("location",item.getSys().getOrDefault("location",item.getSys().get("place")));
+                ar.put("location",item.getSys().getOrDefault("place",item.getSys().get("location")));
 
                 if(item.getSys().get("tags")!=null){
                     Map<String,Float> tags = gson.fromJson(item.getSys().get("tags"),new TypeToken<Map<String,Float>>(){}.getType());

@@ -416,8 +416,7 @@ public class HbaseDaoImpl extends HbaseAccessor implements HbaseOperations {
 			Hcolumn col) {
 
 		if (col.getQualifier() == null) {
-			NavigableMap<byte[], byte[]> maps = result.getFamilyMap(col
-					.getFamily());
+			NavigableMap<byte[], byte[]> maps = result.getFamilyMap(col.getFamily());
 			if (maps == null||maps.isEmpty())
 				return;
 			else {

@@ -12,7 +12,7 @@ public class KNNLocal {
         int row=100;
         int col=6;
         double[][] data=new double[row][col];
-        for(int i=0;i<row;i++) {
+        for(int i=0;i<row;i++){
             for (int j = 0; j < col; j++){
                 data[i][j] = r.nextInt(10);
                 System.out.print(data[i][j]+"  ");
@@ -45,7 +45,6 @@ public class KNNLocal {
                   index[j] = index[j-1];
                   index[j-1] = tmp2;
               }
-
             }
         return index;
 

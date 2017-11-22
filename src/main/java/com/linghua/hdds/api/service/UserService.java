@@ -33,7 +33,7 @@ public class UserService extends ServiceTemplate<User>{
 			User u = new User();
 			u.setId(Bytes.toString(result.getRow()));
 			
-			for(Entry<Integer, Hcolumn> entry:User.HBASE_MAPPING.entrySet()){ 
+			for(Entry<Integer, Hcolumn> entry:User.HBASE_MAPPING.entrySet()){
 				HbaseDaoImpl.setField(result, u, entry);
 			}
 			return u;

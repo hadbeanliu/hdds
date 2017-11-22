@@ -141,7 +141,6 @@ public class ExetractorKeyword {
             sets.put("place",city2+district+name);
         }
         JSONObject location = result.getJSONObject("location");
-        sets.put("xy",location.getDouble("lng")+","+location.getDouble("lat"));
         return location.getDouble("lng")+","+location.getDouble("lat");
 
     }

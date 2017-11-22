@@ -1,7 +1,6 @@
 package com.lhb.dds.hdds;
 
-import com.google.gson.Gson;
-import com.linghua.hdds.common.CataLogManager;
+
 import com.linghua.hdds.store.User;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;

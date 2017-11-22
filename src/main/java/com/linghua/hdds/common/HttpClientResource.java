@@ -3,11 +3,8 @@ package com.linghua.hdds.common;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -48,15 +45,13 @@ public class HttpClientResource {
 			NameValuePair[] data=new NameValuePair[queue.size()];
 			int i=0;
  			for(Entry<String, String> kv:queue.entrySet()){
-					data[i]=new NameValuePair(kv.getKey(), kv.getValue());
-				
+				data[i]=new NameValuePair(kv.getKey(), kv.getValue());
  				i++;
  			}
  			
 			if(MethodSignal.POST.equals(met)){
 				((PostMethod)method).setRequestBody(data);
-			}
-			else{
+			}else{
 				method.setQueryString(data);
 			}
 		}
