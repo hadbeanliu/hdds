@@ -26,7 +26,7 @@ public class DailyTaskBuilder {
                 Result r=rs.next();
                 String[] acts = Bytes.toString(r.getRow()).split("_");
                 if(acts.length == 3){
-                    String uid = TableUtil.idReverseAndBuild(acts[0]);
+                    String uid = acts[0];
                     String actType = acts[1];
                     String iid = TableUtil.IdReverse(acts[2]);
                     Set<String> iusers=iidWithUids.getOrDefault(iid,new HashSet<String>());
@@ -99,13 +99,21 @@ public class DailyTaskBuilder {
 
 
     public static void main(String[] args) throws IOException {
-        Table actTable = ConnectionFactory.createConnection().getTable(TableName.valueOf("headlines:user_msg_table"));
-        Get get =new Get("0000000000000066".getBytes());
-        get.addFamily("bhv".getBytes());
-        Result r = actTable.get(get);
-        for(Cell cell:r.rawCells()){
-            System.out.println(new String(cell.getQualifier())+":"+Bytes.toLong(cell.getValue()));
-        }
+//        Table actTable = ConnectionFactory.createConnection().getTable(TableName.valueOf("headlines:user_msg_table"));
+        int cnt =0;
+        Random r=new Random();
+        for(int j=0;j<100;j++)
+            if (r.nextInt(1000)%2 ==0)
+                cnt++;
+        System.out.println(cnt);
+//        Get get =new Get("0000000000000066".getBytes());
+//        get.addFamily("bhv".getBytes());
+//        Result r = actTable.get(get);
+//        for(Cell cell:r.rawCells()){
+//            System.out.println(new String(cell.getQualifier())+":"+Bytes.toLong(cell.getValue()));
+//        }
+//        DailyTaskBuilder taskBuilder = new DailyTaskBuilder();
+//        taskBuilder.reComputeUserCatalogPrefs(100);
 
     }
 }
