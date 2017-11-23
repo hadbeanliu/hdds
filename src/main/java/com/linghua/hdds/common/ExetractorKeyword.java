@@ -91,7 +91,7 @@ public class ExetractorKeyword {
                 else if(k.equals("nr"))
                   sysSet.put("figure",keyform.get("nr"));
                 else if(k.equals("produce"))
-                    sysSet.put("produce",keyform.get("np"));
+                  sysSet.put("produce",keyform.get("np"));
             }
 
             if(location!=null){
@@ -156,7 +156,6 @@ public class ExetractorKeyword {
         if(result.getInt("confidence")<30)
             return null;
         JSONObject location = result.getJSONObject("location");
-        sets.put("place",place);
         sets.put("xy",location.getDouble("lng")+","+location.getDouble("lat"));
         return sets.get("xy");
     }

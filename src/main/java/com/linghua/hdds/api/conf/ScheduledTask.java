@@ -20,7 +20,7 @@ public class ScheduledTask {
     @Scheduled(cron = "0 0 3 * * ?")
     public void loadRecommendArticle(){
         long begin = System.currentTimeMillis();
-        logger.info("重新加载推荐文章数据，"+ System.currentTimeMillis());
+        logger.info("重新加载推荐文章数据"+ System.currentTimeMillis());
         BaseTagWithLabelRecommendModel.reload();
         BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.MONTH));
         logger.info("重新加载数据成功，加载耗时为:"+(System.currentTimeMillis() - begin));
@@ -32,6 +32,6 @@ public class ScheduledTask {
         logger.info("清洗转换历史记录："+ System.currentTimeMillis());
         DailyTaskBuilder retrain = new DailyTaskBuilder();
         retrain.reComputeUserCatalogPrefs(1/24);
-       logger.info("转换成功，加载耗时为:"+(System.currentTimeMillis() - begin));
+        logger.info("转换成功，加载耗时为:"+(System.currentTimeMillis() - begin));
     }
 }

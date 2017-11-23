@@ -1,15 +1,11 @@
 package com.linghua.hdds.api.resource;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.linghua.hdds.api.response.Node;
 import com.linghua.hdds.api.service.ItemService;
 import com.linghua.hdds.common.*;
 import com.linghua.hdds.store.Item;
-import com.rongji.cms.webservice.client.json.ArticleClient;
-import com.rongji.cms.webservice.domain.WsArticleFilter;
-import com.rongji.cms.webservice.domain.WsArticleSynData;
-import com.rongji.cms.webservice.domain.WsPage;
+
 import org.lionsoul.jcseg.tokenizer.core.JcsegException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -37,7 +33,6 @@ public class TestController {
         Assert.notNull(iid, "item id must be required!");
         Assert.notNull(biz, "biz_code must be required!");
         Item item = itemService.get(biz, TableUtil.IdReverse(iid));
-        ExetractorKeyword2.exetract(item);
         return new Gson().toJson(item);
     }
 
