@@ -1,5 +1,6 @@
 package com.linghua.hdds.api.conf;
 
+import com.linghua.hdds.common.DailyTaskBuilder;
 import com.linghua.hdds.common.TableUtil;
 import com.linghua.hdds.preference.model.BaseTagWithLabelRecommendModel;
 import org.slf4j.Logger;
@@ -23,5 +24,14 @@ public class ScheduledTask {
         BaseTagWithLabelRecommendModel.reload();
         BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.MONTH));
         logger.info("重新加载数据成功，加载耗时为:"+(System.currentTimeMillis() - begin));
+    }
+
+    @Scheduled(cron = "0 0 3/1 * * ?")
+    public void retrainHistoryData(){
+        long begin = System.currentTimeMillis();
+        logger.info("清洗转换历史记录："+ System.currentTimeMillis());
+        DailyTaskBuilder retrain = new DailyTaskBuilder();
+        retrain.reComputeUserCatalogPrefs(1/24);
+       logger.info("转换成功，加载耗时为:"+(System.currentTimeMillis() - begin));
     }
 }

@@ -118,7 +118,7 @@ public class ItemController {
                 article.put("np",np);
                 article.put("nr",nr);
                 article.put("nt",nt);
-                article.put("location",item.getSys().getOrDefault("location",item.getSys().getOrDefault("place","")));
+                article.put("location",item.getSys().get("place"));
                 article.put("latalng",item.getSys().getOrDefault("xy",""));
 
             }
@@ -334,7 +334,7 @@ public class ItemController {
             ar.put("text", item.getContent());
             if(item.getSys()!=null){
                 ar.putAll(item.getSys());
-                ar.put("location",item.getSys().getOrDefault("place",item.getSys().get("location")));
+                ar.put("location",item.getSys().get("place"));
 
                 if(item.getSys().get("tags")!=null){
                     Map<String,Float> tags = gson.fromJson(item.getSys().get("tags"),new TypeToken<Map<String,Float>>(){}.getType());

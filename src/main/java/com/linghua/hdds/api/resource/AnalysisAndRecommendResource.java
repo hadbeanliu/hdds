@@ -14,6 +14,7 @@ import com.linghua.hdds.common.*;
 import com.linghua.hdds.preference.model.BaseTagWithLabelRecommendModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -211,7 +212,20 @@ public class AnalysisAndRecommendResource {
         BigInteger big;
 		return null;
 	}
-	
+
+	@RequestMapping("/recommendFromCatalog/{biz}/{caId}/{page}")
+    public List recommendFromCatalog(@PathVariable("biz")String biz,@PathVariable("caId")String caId,@PathVariable("page")int page,@RequestBody Map<String,Integer> behavior ){
+
+        Assert.hasLength(biz,"");
+        Assert.hasLength(caId,"");
+        String caName = CataLogManager.getCaName(caId);
+
+        if(behavior ==null ||behavior.size() ==0){
+
+        }
+
+	    return null;
+    }
 
 	@RequestMapping(value = "/classify")
 	@ResponseBody
@@ -343,6 +357,8 @@ class Meta{
 		
 		return this.caName+","+this.value;
 	}
-	
+
+
+
 	
 }
