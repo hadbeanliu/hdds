@@ -44,14 +44,11 @@ public class TestController {
         Assert.notNull(biz, "biz_code must be required!");
         Item item = itemService.get(biz, TableUtil.IdReverse(iid));
         MainWordExtractor extractor = MainWordExtractor.getInstance();
-        try {
-            System.out.println(extractor.simpleTokenizeWithPart(item.getContent()));
-        } catch (JcsegException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(item.getSys()!=null){
+            item.getSys().remove("place");
         }
         ExetractorKeyword.exetract(item);
+
         return new Gson().toJson(item);
     }
     @RequestMapping("/get/{biz}/{iid}")

@@ -1,23 +1,17 @@
 package com.linghua.hdds.api.db;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.springframework.data.hadoop.hbase.HbaseAccessor;
-import org.springframework.data.hadoop.hbase.HbaseOperations;
-import org.springframework.data.hadoop.hbase.HbaseUtils;
-import org.springframework.data.hadoop.hbase.ResultsExtractor;
-import org.springframework.data.hadoop.hbase.RowMapper;
-import org.springframework.data.hadoop.hbase.TableCallback;
-import org.springframework.util.Assert;
-
 import com.linghua.hdds.common.ByteUtils;
 import com.linghua.hdds.meta.Hcolumn;
 import com.linghua.hdds.store.BeanTemplate;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.springframework.data.hadoop.hbase.*;
+import org.springframework.util.Assert;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 
 
 public class HbaseDaoImpl extends HbaseAccessor implements HbaseOperations {

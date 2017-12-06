@@ -95,7 +95,7 @@ public class ExetractorKeyword {
             }
 
             if(location!=null){
-                getPrecisFromBaiduMap(location,sysSet.get("city"),sysSet);
+                getPrecisFromBaiduMapWithrenderReverse(location,sysSet.get("city"),sysSet);
             }
             item.setSys(sysSet);
         } catch (IOException e) {
@@ -108,14 +108,15 @@ public class ExetractorKeyword {
 
     private static Gson gson = new Gson();
 
-    public static String getPrecisFromBaiduMap(String place,String region,Map<String,String> sets){
-
-        if(getXYFromBaiduMap(place,region, sets) == null){
-            return null;
-        }
+    public static String getPrecisFromBaiduMapWithSearch(String place,String region,Map<String,String> sets){
 
         if (region ==null)
             region = "全国";
+        String predics = getXYFromBaiduMap(place,region, sets);
+        if(predics == null){
+            return null;
+        }
+
         String req = "http://api.map.baidu.com/place/v2/suggestion?city_limit=false&output=json&ak=4G9twNlyjRwRnvq3MOSGNoE6XSXZnGME&query="+place+"&region="+region;
         String res = HttpClientResource.post(null,req);
         JSONObject obj = new JSONObject(res);
@@ -126,11 +127,31 @@ public class ExetractorKeyword {
         if(list.length() == 0) {
             return null;
         }
+        int index =-1;
+        String[] lnglat1= predics.split(",");
+        double lng1 = Double.valueOf(lnglat1[0]);
+        double lat1 = Double.valueOf(lnglat1[1]);
+        double min = Double.MAX_VALUE;
+        for(int i=0;i<list.length();i++){
+            JSONObject result = list.getJSONObject(i);
+            if(!result.has("location"))
+                continue;
+            JSONObject location = result.getJSONObject("location");
+            double lng2 = location.getDouble("lng");
+            double lat2 = location.getDouble("lat");
+            double d =getDistanceFromMap(lng1,lat1,lng2,lat2);
+            if(d<0.5&&d<min){
+                min = d;
+                index = i;
+            }
+        }
+        if(index == -1)
+            return null;
 
-        JSONObject result = list.getJSONObject(0);
+        JSONObject result = list.getJSONObject(index);
         String city2 = result.getString("city");
         String district = result.getString("district");
-        String name = result.getString("name");
+        String name = place;
         if(district.equals("")||district.equals(city2))
             return null;
         if(name.indexOf(city2)!=-1){
@@ -144,20 +165,60 @@ public class ExetractorKeyword {
         return location.getDouble("lng")+","+location.getDouble("lat");
 
     }
+    public static String getPrecisFromBaiduMapWithrenderReverse(String place,String region,Map<String,String> sets){
+        if (region ==null)
+            region = "全国";
+        String predics = getXYFromBaiduMap(place,region, sets);
+        if(predics == null){
+            return null;
+        }
+
+        String req = "http://api.map.baidu.com/geocoder/v2/?output=json&pois=0&ak=4G9twNlyjRwRnvq3MOSGNoE6XSXZnGME&location="+predics;
+        String res = HttpClientResource.post(null,req);
+        JSONObject obj = new JSONObject(res);
+        int status =obj.getInt("status");
+        if(status!=0)
+            return null;
+        JSONObject result = obj.getJSONObject("result");
+        if(result.has("addressComponent")){
+            JSONObject address = result.getJSONObject("addressComponent");
+            String province = address.getString("province");
+            String city = address.getString("city");
+            String district = address.getString("district");
+            if(place.indexOf(province)!=-1){
+                sets.put("place",place);
+            }else if(place.indexOf(city)!=-1){
+                sets.put("place",province+place);
+            }else if(place.indexOf(district)!=-1){
+                sets.put("place",province+city+place);
+            }else {
+                sets.put("place",province+city+district+place);
+            }
+
+        }
+
+        return sets.get("xy");
+
+
+
+
+    }
 
     public static String getXYFromBaiduMap(String place,String city,Map<String,String> sets){
-        String req = "http://api.map.baidu.com/geocoder/v2/?output=json&ak=4G9twNlyjRwRnvq3MOSGNoE6XSXZnGME&address="+place;
+        String req = "http://api.map.baidu.com/geocoder/v2/?output=json&ak=4G9twNlyjRwRnvq3MOSGNoE6XSXZnGME&address="+place+"&city="+city;
         String res = HttpClientResource.post(null,req);
         JSONObject obj =new JSONObject(res);
         int status =obj.getInt("status");
         if(status!=0)
             return null;
         JSONObject result = obj.getJSONObject("result");
-        if(result.getInt("confidence")<30)
+        if(result.getInt("confidence")<31)
             return null;
         JSONObject location = result.getJSONObject("location");
-        sets.put("xy",location.getDouble("lng")+","+location.getDouble("lat"));
-        return sets.get("xy");
+        double x=location.getDouble("lng");
+        double y= location.getDouble("lat");
+        sets.put("xy",x+","+y);
+        return y+","+x;
     }
     public static String getXY(String place){
 
@@ -184,8 +245,28 @@ public class ExetractorKeyword {
     }
 
     public static void main(String[] args){
-        getXYFromBaiduMap("纽约",null,null);
+
+        String json = "{name:jack,age:22}";
+        JSONObject obj=new JSONObject(json);
+        System.out.println(obj.has("abv"));
+
     }
 
+    public static double getDistanceFromMap(double lng1,double lat1,double lng2,double lat2){
 
+        double d =0;
+        lat1 =rad(lat1);
+        lat2 = rad(lat2);
+        double dlng = rad(lng1-lng2);
+        double dlat = lat1-lat2;
+        double sdlng = Math.sin(dlng/2.0);
+        double sdlat = Math.sin(dlat/2.0);
+
+        return 2* 6378.137
+                * Math.asin(Math.sqrt(sdlat * sdlat + Math.cos(lat1)
+                * Math.cos(lat2) * sdlng * sdlng));
+    }
+    private static double rad(double d){
+        return d*Math.PI/180.0;
+    }
 }

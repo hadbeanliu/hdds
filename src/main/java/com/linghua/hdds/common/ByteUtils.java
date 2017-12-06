@@ -1,13 +1,9 @@
 package com.linghua.hdds.common;
 
-import java.nio.ByteBuffer;
-import java.util.Map.Entry;
-
-import org.apache.avro.util.Utf8;
-import org.apache.hadoop.hbase.client.Result;
+import com.linghua.hdds.meta.Hcolumn.Type;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import com.linghua.hdds.meta.Hcolumn.Type;
+import java.nio.ByteBuffer;
 
 
 

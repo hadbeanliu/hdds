@@ -495,14 +495,9 @@ public class ItemController {
 				for(String kw:ns) {
 					sb.append(kw).append(",");
 				}
-
-                String xy = ExetractorKeyword.getXY(sb.toString());
-				if(xy!=null){
-                    article.put("location",sb.toString());
-                    sysSet.put("location",sb.toString());
-                    sysSet.put("xy",xy);
-                    article.put("latalng",xy.split(",")[1]+","+xy.split(",")[0]);
-                }
+				sysSet.put("place","");
+				sysSet.put("xy","");
+                String xy = ExetractorKeyword.getPrecisFromBaiduMapWithrenderReverse(sb.toString(),null,sysSet);
 			}
 			if(vo.getNpTag()!=null&&vo.getNpTag().length>0){
 				StringBuilder sb=new StringBuilder();
@@ -817,13 +812,11 @@ public class ItemController {
 
 					} else if (first < last) {
 						ar.put("createTime", page.getFirstPubTime());
-						page.setFirstPubTime(String
-								.valueOf(DateUtils.toDate("yyyy-MM-dd HH:mm:ss", page.getFirstPubTime()).getTime()));
+						page.setFirstPubTime(String.valueOf(DateUtils.toDate("yyyy-MM-dd HH:mm:ss", page.getFirstPubTime()).getTime()));
 
 					} else {
 						ar.put("createTime", page.getFirstPubTime() + ":00");
-						page.setFirstPubTime(
-								String.valueOf(DateUtils.toDate("yyyy-MM-dd HH:mm", page.getFirstPubTime()).getTime()));
+						page.setFirstPubTime(String.valueOf(DateUtils.toDate("yyyy-MM-dd HH:mm", page.getFirstPubTime()).getTime()));
 
 					}
 

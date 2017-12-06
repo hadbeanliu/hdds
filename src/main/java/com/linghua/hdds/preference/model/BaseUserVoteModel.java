@@ -3,10 +3,7 @@ package com.linghua.hdds.preference.model;
 public class BaseUserVoteModel {
 
 	private static BaseUserVoteModel model;
-	
-//	private 
-	
-	
+
 	public BaseUserVoteModel getInstance(){
 		
 		return null;

@@ -151,7 +151,7 @@ public class AnalysisAndRecommendResource {
         }).collect(Collectors.toList());
 
     }
-	private List<ArticleVo> getArticleByIds(List<TwoTuple<String, Double>> result,int hm,boolean random) throws Exception {
+	private List<ArticleVo> getArticleFromCMSByIds(List<TwoTuple<String, Double>> result,int hm,boolean random) throws Exception {
 
         long begin = System.currentTimeMillis();
         int length=result.size();
@@ -226,6 +226,8 @@ public class AnalysisAndRecommendResource {
 
 	    return null;
     }
+
+//    @RequestMapping(value="/")
 
 	@RequestMapping(value = "/classify")
 	@ResponseBody
