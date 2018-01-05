@@ -65,12 +65,30 @@ public class AnalysisAndRecommendResource {
         }
         BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
         try {
-            return getArticleFromHbaseByIds(biz,model.recommend(tags,null),hm,true);
+        	List<TwoTuple<String,Float>> result = model.recommend(tags,null).stream().distinct().filter(x->x!=null).sorted((x,y)->y._2.compareTo(x._2)).collect(Collectors.toList());
+            return getArticleFromHbaseByIds(biz,result,hm,true);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
+	@RequestMapping("/rmdByTG/{biz}/{filter}/{hm}")
+	public List<ArticleVo> recommendByTemplateGraph(@PathVariable("biz") String biz,@PathVariable("filter") String filter,@PathVariable("hm") int hm,@RequestBody Map<String,Float> tags){
+		if(tags ==null ||tags.size() ==0) {
+			return new ArrayList<>();
+		}
+		if(hm >10){
+			hm = 10;
+		}
+		BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
+		try {
+			return getArticleFromHbaseByIds(biz,model.recommend(tags,null),hm,true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 	@RequestMapping("/rmdByUser/{biz}/{ssCode}/{uid}/{dir}")
 	@ResponseBody
@@ -89,7 +107,7 @@ public class AnalysisAndRecommendResource {
 		List<TwoTuple<String, Float>> result= model.recommend(user);
 
 		try {
-			return getArticleFromHbaseByIds(biz,result,hm,true);
+			return getArticleFromHbaseByIds(biz,result.stream().filter(x->x!=null).sorted((x,y)->y._2.compareTo(x._2)).collect(Collectors.toList()), hm,true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

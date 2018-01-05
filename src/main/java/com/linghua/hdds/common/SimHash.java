@@ -133,8 +133,6 @@ public class SimHash {
     public int getHarmingDistance(SimHash simhash){
 
         BigInteger m= new BigInteger("1").shiftLeft(hashbits).subtract(new BigInteger("1"));
-        System.out.println(getSimHash().toString());
-        System.out.println(simhash.getSimHash().toString());
         BigInteger x = getSimHash().xor(simhash.getSimHash()).and(m);
         int tot = 0;
         while (x.signum() != 0){
@@ -160,11 +158,20 @@ public class SimHash {
 
         String content2="7种情形为：入学未满一学期或者毕业前一年的;高考成绩低于拟转入学校相关专业同一生源地相应年份录取成绩的;由低学历层次转为高学历层次的;以定向就业招生录取的;研究生拟转入学校、专业的录取控制标准高于其所在学校、专业的;无正当转学理由的;学校规定的其他限制性情形的。微信给你送红包！扫码开发票就能领，最高能拿 188 元";
 //        String contetn3="提供全流程网上办理（在线申请、网上预审、网上受理、网上办结）,申请人不用提交纸质申请材料，只须办结后领取结果";
-        SimHash hash1=new SimHash(content1);
-        SimHash hash2=new SimHash(content2);
+        long begin =System.currentTimeMillis();
+        for (int i = 0; i <1000000; i++) {
+            SimHash hash1=new SimHash(content1);
+            SimHash hash2=new SimHash(content2);
+            hash1.getHarmingDistance(hash2);
+            if(i == 5000)
+                System.out.println(i);
+        }
+        System.out.println(System.currentTimeMillis() - begin);
+//        SimHash hash1=new SimHash(content1);
+//        SimHash hash2=new SimHash(content2);
 
 
-        System.out.println(hash1.getHarmingDistance(hash2));
+//        System.out.println(hash1.getHarmingDistance(hash2));
 //        BigInteger c1=new BigInteger("6977518874744472855");
 //        BigInteger c2=new BigInteger("3063547031");
 //        BigInteger m= new BigInteger("1").shiftLeft(hashbits).subtract(new BigInteger("1"));

@@ -1,6 +1,5 @@
 package com.linghua.hdds.store;
 
-import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hbase.client.Put;
@@ -25,7 +24,7 @@ public class Item implements BeanTemplate{
 		HBASE_MAPPING.put(4, new Hcolumn("gl".getBytes(),Type.STRING));//关联文章
 		HBASE_MAPPING.put(5, new Hcolumn("kw".getBytes(), Type.FLOAT));//标签
 		
-		HBASE_MAPPING.put(6, new Hcolumn("s".getBytes(), "s".getBytes(),Type.DOUBLE));//得分
+		HBASE_MAPPING.put(6, new Hcolumn("f".getBytes(), "s".getBytes(),Type.DOUBLE));//得分
 		HBASE_MAPPING.put(7, new Hcolumn("ts".getBytes(),Type.STRING));//人群推送
 		
 		HBASE_MAPPING.put(8, new Hcolumn("f".getBytes(),"lb".getBytes(),Type.STRING));//类别

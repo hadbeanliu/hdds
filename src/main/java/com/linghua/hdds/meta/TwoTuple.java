@@ -12,6 +12,21 @@ public class TwoTuple<first,second> {
 		
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		TwoTuple<?, ?> twoTuple = (TwoTuple<?, ?>) o;
+
+		return _1 != null ? _1.equals(twoTuple._1) : twoTuple._1 == null;
+	}
+
+	@Override
+	public int hashCode() {
+		return _1 != null ? _1.hashCode() : 0;
+	}
+
 	public String toString(){
 		return this._1+":"+ this._2;
 	}
