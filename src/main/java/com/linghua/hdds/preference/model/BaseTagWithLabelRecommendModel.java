@@ -3,6 +3,7 @@ package com.linghua.hdds.preference.model;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
+import com.linghua.hdds.meta.ActionType;
 import com.linghua.hdds.meta.TwoTuple;
 import com.linghua.hdds.store.Item;
 import com.linghua.hdds.store.User;
@@ -20,7 +21,7 @@ import java.util.*;
 public class BaseTagWithLabelRecommendModel {
     private static final String tagsIndexPath = "/home/hadoop/result/tagsIndex.model";
 
-	private static BaseTagWithLabelRecommendModel model;
+	private TopItemRecommender topRanks =new TopItemRecommender();
 	private static Map<String,BaseTagWithLabelRecommendModel> models=new HashMap<>();
 	private Map<String, Integer> indexStringModel;
 	private int tagLength =0;
@@ -61,8 +62,14 @@ public class BaseTagWithLabelRecommendModel {
         }
     }
 
-	public static void reload(){
-        model = null;
+    public static void reloadAll(){
+//        model = null;
+        models.clear();
+    }
+
+	public static void reload(String biz,String stopRow){
+//        model = null;
+        models.put(biz,new BaseTagWithLabelRecommendModel(biz,stopRow));
     }
 
 	private BaseTagWithLabelRecommendModel(String biz,String stopRow) {
@@ -90,31 +97,47 @@ public class BaseTagWithLabelRecommendModel {
 				scan.addColumn("sys".getBytes(),"tags".getBytes());
 
 				scan.addColumn("f".getBytes(),"lb".getBytes());
+				scan.addColumn("p".getBytes(),"ft".getBytes());
+				scan.addFamily("his".getBytes());
 				ResultScanner rs=table.getScanner(scan);
 				Iterator<Result> rit=rs.iterator();
 				Random random=new Random();
 				while(rit.hasNext()){
 					Result r=rit.next();
-					Map<Integer, Float> kw=new HashMap<>();
 					String label=null;
 
-					if(r.isEmpty()||r.size()!=2){
+					if(r.isEmpty()||r.size()<2){
 					    continue;
                     }
-                    Map <String,Float> t= gson.fromJson(Bytes.toString(r.getValue(sys,tags)),new TypeToken<Map<String,Float>>(){}.getType());
-                    for(Map.Entry<String,Float> kv:t.entrySet()){
-                        kw.put(indexStringModel.getOrDefault(kv.getKey(),random.nextInt(tagLength)),kv.getValue());
-                    }
-
                     label = Bytes.toString(r.getValue("f".getBytes(),"lb".getBytes()));
-					if(kw.size()!=0) {
+                    String row = Bytes.toString(r.getRow());
 
-						Map<String,SparseVector> vectorMap= mtrix.getOrDefault(label,new HashMap<String,SparseVector>());
-                        vectorMap.put(Bytes.toString(r.getRow()), SparseVector.toSparseVector(kw));
-                        mtrix.put(label,vectorMap);
-					}
+                    Map <String,Float> t= gson.fromJson(Bytes.toString(r.getValue(sys,tags)),new TypeToken<Map<String,Float>>(){}.getType());
+                    if(t!=null){
+                        Map<Integer, Float> kw=new HashMap<>();
+                        for(Map.Entry<String,Float> kv:t.entrySet()){
+                            kw.put(indexStringModel.getOrDefault(kv.getKey(),random.nextInt(tagLength)),kv.getValue());
+                        }
+
+                        if(kw.size()!=0) {
+
+                            Map<String,SparseVector> vectorMap= mtrix.getOrDefault(label,new HashMap<String,SparseVector>());
+                            vectorMap.put(row, SparseVector.toSparseVector(kw));
+                            mtrix.put(label,vectorMap);
+                        }
+                    }
+					if(r.getFamilyMap("his".getBytes()).size()>0){
+                        NavigableMap<byte[], byte[]> history = r.getFamilyMap("his".getBytes());
+
+                        Map<String,Long> act = new HashMap<>();
+                        history.forEach((k,v) -> act.put(Bytes.toString(k),Bytes.toLong(v)));
+                        float score = ScoreEvaluator.evaluate(act,r.getValue("p".getBytes(),"ft".getBytes())==null? 1l :Long.valueOf(Bytes.toString(r.getValue("p".getBytes(),"ft".getBytes()))));
+                        topRanks.add(label,row,score);
+                    }
+//                    topRanks.desc();
 				}
-				
+                topRanks.sort();
+                topRanks.desc();
 				
 			} catch (IOException e) {
 				
@@ -135,6 +158,11 @@ public class BaseTagWithLabelRecommendModel {
 		System.out.println("length of item to recommend:::"+mtrix.size());
 		
 	}
+
+    public List<TwoTuple<String, Float>> getPopularItem(int hm) {
+
+        return topRanks.getTopN(hm);
+    }
 
 	public List<TwoTuple<String, Float>> recommend(Map<String,Float> keys,List<String> filter) {
         Map<Integer, Float> vector = new HashMap<>();

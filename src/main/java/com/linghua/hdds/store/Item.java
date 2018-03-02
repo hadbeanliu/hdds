@@ -39,7 +39,7 @@ public class Item implements BeanTemplate{
 		HBASE_MAPPING.put(16, new Hcolumn("sys".getBytes(),Type.STRING));
 		HBASE_MAPPING.put(17,new Hcolumn("his".getBytes(),Type.LONG));
 
-		
+
 	}
 	
 	public static String[] ALL_FIELDS={"update","title","firstFetchTime","content","related","keyword",

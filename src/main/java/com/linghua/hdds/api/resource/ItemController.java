@@ -668,9 +668,9 @@ public class ItemController {
 			return "fail";
 		}
 		
-		if(StringUtils.isEmpty(pageMap.get("html"))||"此页面是否是列表页或首页？未找到合适正文内容。".equals(pageMap.get("content"))){
+		if(StringUtils.isEmpty(pageMap.get("title"))||StringUtils.isEmpty(pageMap.get("html"))||"此页面是否是列表页或首页？未找到合适正文内容。".equals(pageMap.get("content"))){
 			int length=pageMap.get("content")==null?0:pageMap.get("content").length();
-			LOG.error("文章内容为空:[title:" + pageMap.get("title") + "   url:" + pageMap.get("baseUrl") + "::<"
+			LOG.error("文章内容或者标题为空:[title:" + pageMap.get("title") + "   url:" + pageMap.get("baseUrl") + "::<"
 					+ length + ">]");
 			return "fail";
 		}

@@ -55,6 +55,14 @@ public class AnalysisAndRecommendResource {
         FIELDS.add(Item.FIELDS.HIS);
         FIELDS.add(Item.FIELDS.FIRSTPUBTIME);
     }
+    @RequestMapping("/reload/model/{biz}/{name}")
+    public String reloadModel(@PathVariable("biz") String biz,@PathVariable("name") String name){
+
+        BaseTagWithLabelRecommendModel.reload(biz, TableUtil.getEndKey(1, Calendar.MONTH));
+
+        return "success";
+
+    }
     @RequestMapping("/rmdByT/{biz}/{filter}/{hm}")
 	public List<ArticleVo> recommendByTag(@PathVariable("biz") String biz,@PathVariable("filter") String filter,@PathVariable("hm") int hm,@RequestBody Map<String,Float> tags){
         if(tags ==null ||tags.size() ==0) {
@@ -66,12 +74,14 @@ public class AnalysisAndRecommendResource {
         BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
         try {
         	List<TwoTuple<String,Float>> result = model.recommend(tags,null).stream().distinct().filter(x->x!=null).sorted((x,y)->y._2.compareTo(x._2)).collect(Collectors.toList());
+        	fillFull(result,hm,model);
             return getArticleFromHbaseByIds(biz,result,hm,true);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
 
 	@RequestMapping("/rmdByTG/{biz}/{filter}/{hm}")
 	public List<ArticleVo> recommendByTemplateGraph(@PathVariable("biz") String biz,@PathVariable("filter") String filter,@PathVariable("hm") int hm,@RequestBody Map<String,Float> tags){
@@ -83,17 +93,32 @@ public class AnalysisAndRecommendResource {
 		}
 		BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
 		try {
-			return getArticleFromHbaseByIds(biz,model.recommend(tags,null),hm,true);
+            List<TwoTuple<String,Float>> result =model.recommend(tags,null);
+            fillFull(result,hm,model);
+            return getArticleFromHbaseByIds(biz,result,hm,true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
-	
-	@RequestMapping("/rmdByUser/{biz}/{ssCode}/{uid}/{dir}")
+
+    @RequestMapping("/rmdTop/{biz}/{ssCode}/{type}")
+    @ResponseBody
+    public List<ArticleVo> recommendTopRanks(@PathVariable("biz") String biz,@PathVariable("ssCode") String ssCode,@PathVariable("type") String type){
+
+	    return null;
+    }
+
+    private void fillFull(List<TwoTuple<String, Float>> result,int hm,BaseTagWithLabelRecommendModel model){
+
+        if(hm-result.size()>0){
+            result.addAll(model.getPopularItem(hm-result.size()));
+        }
+    }
+
+    @RequestMapping("/rmdByUser/{biz}/{ssCode}/{uid}/{dir}")
 	@ResponseBody
 	public List<ArticleVo> recommendByUser(@PathVariable("biz") String biz,@PathVariable("ssCode") String ssCode,@PathVariable("uid") String uid,@PathVariable("dir") String dir){
-
 
 		int hm = 20;
         System.out.println(biz+"----"+uid+"----"+dir);

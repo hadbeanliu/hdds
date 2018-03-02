@@ -8,16 +8,21 @@ import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Test {
 
     public static void main(String[] args){
 
-        long now =System.currentTimeMillis();
-        float a = 0.33f;
-        long b = (long) (now*a-1l);
-        System.out.println(b+"---"+now);
-
+        List<Integer> list=new ArrayList<>();
+        list.add(1);
+        list.add(3);
+        list.add(5);
+        list.add(2);
+        list.sort((x,y) -> y.compareTo(x));
+        System.out.println(list);
 
     }
     public static void startRecommend(){
