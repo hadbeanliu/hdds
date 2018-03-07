@@ -47,7 +47,7 @@ public class BehaviorController {
     @RequestMapping("/bhv/clt/{biz}/{uid}/{iid}/{type}")
     public boolean collect(@PathVariable(value="biz") String biz, @PathVariable(value="uid") String uid, @PathVariable(value="iid") String iid, @PathVariable(value="type")ActionType type){
         biz="headlines";
-        if(uid ==null || iid == null||type ==null){
+        if(uid ==null || uid.equals("undefined") || iid == null||type ==null){
             return false;
         }
         String user_act_item =TableUtil.idReverseAndBuild(uid,type.getName(),iid);

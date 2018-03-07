@@ -29,7 +29,7 @@ public class Test2 {
             Item item =new Item();
             item.setTitle(Bytes.toString(r.getValue("p".getBytes(),"t".getBytes())));
             item.setContent(Bytes.toString(r.getValue("p".getBytes(),"cnt".getBytes())));
-            ExetractorKeyword.exetract(item);
+            ExetractorKeyword.exetract(item,"headlines");
             if(item.getSys()==null)
                 continue;
             if(item.getSys().get("tags")!=null){

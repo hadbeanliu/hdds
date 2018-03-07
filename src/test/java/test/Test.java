@@ -16,13 +16,7 @@ public class Test {
 
     public static void main(String[] args){
 
-        List<Integer> list=new ArrayList<>();
-        list.add(1);
-        list.add(3);
-        list.add(5);
-        list.add(2);
-        list.sort((x,y) -> y.compareTo(x));
-        System.out.println(list);
+//        final byte[] newby = new byte[Integer.MAX_VALUE/2];
 
     }
     public static void startRecommend(){

@@ -47,7 +47,7 @@ public class TestController {
         if(item.getSys()!=null){
             item.getSys().remove("place");
         }
-        ExetractorKeyword.exetract(item);
+        ExetractorKeyword.exetract(item,biz);
 
         return new Gson().toJson(item);
     }

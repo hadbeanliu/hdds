@@ -288,8 +288,10 @@ public class ItemController {
 		Assert.notNull(iid, "item id must be required!");
 		Assert.notNull(biz_code, "biz_code must be required!");
 		String tmpbiz="govheadlines";
+		String ssCode = "clsfy";
 		if(!biz_code.equals("govheadlines")){
             tmpbiz="headlines";
+			ssCode = "clsfy";
         }
         long begin =System.currentTimeMillis();
         Item item = itemService.get(tmpbiz, TableUtil.IdReverse(iid));
@@ -325,7 +327,7 @@ public class ItemController {
                   i.setCatagoryId(article.get("caId"));
                   i.setFirstPubTime(article.get("createTime"));
                   i.setFirstPubTime(article.get("pubDate"));
-                  ExetractorKeyword.exetract(i);
+                  ExetractorKeyword.exetract(i,tmpbiz);
 //                  i.setFirstPubTime(article.get("pub"));
                 }
                 this.itemService.put(biz_code,TableUtil.IdReverse(iid),i);
@@ -362,7 +364,7 @@ public class ItemController {
 
 				List<String> words = extractor.tokenizeWithoutPart(item.getContent());
 				String recString = HttpClientResource.post(gson.toJson(words),
-						"http://slave2:9999/mining/extractkw?biz_code=headlines" + "&ss_code=user-analys&hm=10");
+						"http://slave2:9999/mining/extractkw?biz_code="+"headlines" + "&ss_code=clsfy&hm=10");
 
 				Map<String, String> recTags = gson.fromJson(recString, new TypeToken<Map<String, String>>() {
 				}.getType());
@@ -749,8 +751,8 @@ public class ItemController {
 			if ("1".equals(autoDis) || (StringUtils.isEmpty(pageMap.get("catagory")))) {
 				try {
 					String result = HttpClientResource.post(page.getContent(),
-							"http://slave2:9999/mining/classify?biz_code=" + pageMap.get("biz_code")
-									+ "&ss_code=user-analys&model=NaiveBayes");
+							"http://slave2:9999/mining/classify?biz_code=" + "headlines" //pageMap.get("biz_code")
+									+ "&ss_code=clsfy&model=NaiveBayes");
 					LOG.info("自动投递：【"+biz_code+",标题："+pageMap.get("title")+","+pageMap.get("baseUrl")+"】");
 					StringTokenizer token = new StringTokenizer(result, "()");
 					int i = 0;
@@ -884,7 +886,7 @@ public class ItemController {
                 }
                 page.setSys(sys);
                 try{
-                    ExetractorKeyword.exetract(page);
+                    ExetractorKeyword.exetract(page,biz_code);
                     if(page.getSys()!=null&&!page.getSys().isEmpty()){
 
                         if(page.getSys().get("xy")!=null){

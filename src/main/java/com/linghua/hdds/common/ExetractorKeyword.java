@@ -17,7 +17,7 @@ public class ExetractorKeyword {
 
     private static Random r=new Random();
 
-    public static void exetract(Item item){
+    public static void exetract(Item item,String bizCode){
 
         MainWordExtractor extractor = MainWordExtractor.getInstance();
         try {
@@ -34,7 +34,7 @@ public class ExetractorKeyword {
 
             Map<String,String> keyform = extractor.tokenize(item.getTitle());
             String recString = HttpClientResource.post(gson.toJson(toTrain),
-                    "http://slave2:9999/mining/getMainKey?biz_code=headlines" + "&ss_code=user-analys&hm=30");
+                    "http://slave2:9999/mining/getMainKey?biz_code="+"govheadlines" + "&ss_code=clsfy&hm=30");
             List<TwoTuple<String,Float>> result =gson.fromJson(recString,new TypeToken<List<TwoTuple<String,Float>>>(){}.getType());
             Map<String,Float> tags=new HashMap<>();
             double min = 6.5 - result.size()/10;
@@ -104,6 +104,16 @@ public class ExetractorKeyword {
             e.printStackTrace();
         }
 
+    }
+
+    public static boolean maybeErrorCatalog(String content,String bizCode,String catalog){
+        String recString = HttpClientResource.post(content,
+                "http://slave2:9999/mining/getMainKey?biz_code="+"govheadlines" + "&ss_code=clsfy&hm=30");
+
+
+
+
+        return false;
     }
 
     private static Gson gson = new Gson();

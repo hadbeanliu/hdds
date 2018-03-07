@@ -65,17 +65,17 @@ public class AnalysisAndRecommendResource {
     }
     @RequestMapping("/rmdByT/{biz}/{filter}/{hm}")
 	public List<ArticleVo> recommendByTag(@PathVariable("biz") String biz,@PathVariable("filter") String filter,@PathVariable("hm") int hm,@RequestBody Map<String,Float> tags){
-        if(tags ==null ||tags.size() ==0) {
-	        return new ArrayList<>();
-        }
+//        if(tags ==null ||tags.size() ==0) {
+//	        return new ArrayList<>();
+//        }
         if(hm >10){
             hm = 10;
         }
         BaseTagWithLabelRecommendModel model = BaseTagWithLabelRecommendModel.getInstance(TableUtil.getEndKey(1, Calendar.WEEK_OF_YEAR));
         try {
-        	List<TwoTuple<String,Float>> result = model.recommend(tags,null).stream().distinct().filter(x->x!=null).sorted((x,y)->y._2.compareTo(x._2)).collect(Collectors.toList());
+        	List<TwoTuple<String,Float>> result = (tags ==null ||tags.size() ==0)?new ArrayList<>():model.recommend(tags,null).stream().distinct().filter(x->x!=null).sorted((x,y)->y._2.compareTo(x._2)).collect(Collectors.toList());
         	fillFull(result,hm,model);
-            return getArticleFromHbaseByIds(biz,result,hm,true);
+            return getArticleFromHbaseByIds(biz,result,hm,false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -112,8 +112,10 @@ public class AnalysisAndRecommendResource {
     private void fillFull(List<TwoTuple<String, Float>> result,int hm,BaseTagWithLabelRecommendModel model){
 
         if(hm-result.size()>0){
-            result.addAll(model.getPopularItem(hm-result.size()));
-        }
+			System.out.println("hm:"+hm +"result size"+result.size());
+			result.addAll(model.getPopularItem(hm-result.size()));
+			System.out.println("result ....... size:"+result.size());
+		}
     }
 
     @RequestMapping("/rmdByUser/{biz}/{ssCode}/{uid}/{dir}")
@@ -144,7 +146,6 @@ public class AnalysisAndRecommendResource {
 	}
     private List<ArticleVo> getArticleFromHbaseByIds(String biz,List<TwoTuple<String, Float>> result,int hm,boolean random) throws Exception {
 
-        long begin = System.currentTimeMillis();
         int length=result.size();
 
         if(length ==0)
@@ -162,9 +163,7 @@ public class AnalysisAndRecommendResource {
                     ids.add(result.get(index)._1);
             }
         }else {
-            for(int i=0;i<hm;i++){
-                ids = result.stream().map(x->x._1).collect(Collectors.toList());
-            }
+           ids = result.stream().map(x->x._1).collect(Collectors.toList()).subList(0,hm);
         }
 
         List<Item> items = itemService.get(biz,ids,FIELDS);
@@ -254,6 +253,13 @@ public class AnalysisAndRecommendResource {
 		SimHash sim=new SimHash("");
         BigInteger big;
 		return null;
+	}
+
+	@RequestMapping("/ugBuild/{biz}/{uid}")
+	public String analysisUg(@PathVariable String biz,@PathVariable String uid){
+
+		return null;
+
 	}
 
 	@RequestMapping("/recommendFromCatalog/{biz}/{caId}/{page}")

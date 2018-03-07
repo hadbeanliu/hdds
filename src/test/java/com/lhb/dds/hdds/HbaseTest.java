@@ -50,7 +50,7 @@ public class HbaseTest {
                 sys.put("location",location);
                 item.setSys(sys);
                 }
-                ExetractorKeyword.exetract(item);
+                ExetractorKeyword.exetract(item,"headlines");
                 if(item.getSys()!=null&&!item.getSys().isEmpty()){
                     Put put =new Put(r.getRow());
                     for(String s:item.getSys().keySet()){
