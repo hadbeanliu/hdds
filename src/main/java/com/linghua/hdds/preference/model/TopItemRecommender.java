@@ -1,6 +1,7 @@
 package com.linghua.hdds.preference.model;
 
 import com.google.common.collect.Maps;
+import com.linghua.hdds.meta.ActionType;
 import com.linghua.hdds.meta.TwoTuple;
 
 import java.util.*;
@@ -46,22 +47,28 @@ public class TopItemRecommender {
     }
     public static void main(String[] args){
 
-        TopItemRecommender topItemRecommender=new TopItemRecommender();
-        Map<String,Long> his = new HashMap<>();
-        his.put("lk",3l);
-        his.put("clt",11l);
-        his.put("v",100l);
-        float s = ScoreEvaluator.evaluate(his,new Date().getTime());
+//        TopItemRecommender topItemRecommender=new TopItemRecommender();
+//        Map<String,Long> his = new HashMap<>();
+//        his.put("lk",3l);
+//        his.put("clt",11l);
+//        his.put("v",100l);
+//        float s = ScoreEvaluator.evaluate(his,new Date().getTime());
+//
+//        System.out.println(s);
+//
+//        List<Integer> ll =new ArrayList<>();
+//
+//        ll.add(3);
+//        ll.add(4);
+//        ll.add(5);
+//        ll.sort((x,y)-> x.compareTo(y));
+//        ll.forEach(x-> System.out.println(x));
 
-        System.out.println(s);
-
-        List<Integer> ll =new ArrayList<>();
-
-        ll.add(3);
-        ll.add(4);
-        ll.add(5);
-        ll.sort((x,y)-> x.compareTo(y));
-        ll.forEach(x-> System.out.println(x));
+        double a = 0;
+        for(int i =0;i<10;i++){
+            a+= i*Math.pow(0.3,i)*Math.pow(0.97,10-i);
+        }
+        System.out.println(a);
 
     }
 

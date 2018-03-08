@@ -17,18 +17,16 @@ public class Test {
     public static void main(String[] args){
 
 //        final byte[] newby = new byte[Integer.MAX_VALUE/2];
+        startRecommend();
 
     }
     public static void startRecommend(){
         try {
-            Table table = ConnectionFactory.createConnection().getTable(TableName.valueOf("headlines:item_meta_table"));
-            Get get = new Get(TableUtil.IdReverse("2017112019006656").getBytes());
-            Result result =table.get(get);
-            String content = Bytes.toString(result.getValue("p".getBytes(),"cnt".getBytes()));
-            String rs = HttpClientResource.post(content,
-                    "http://slave2:9999/mining/classify?biz_code=" + "headlines"
-                            + "&ss_code=user-test&model=NaiveBayes");
-            System.out.println(rs);
+            Table table = ConnectionFactory.createConnection().getTable(TableName.valueOf("headlines:user_msg_table"));
+            Delete delete =new Delete("4600000000000000".getBytes());
+            delete.addFamily("g".getBytes());
+            table.delete(delete);
+            table.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

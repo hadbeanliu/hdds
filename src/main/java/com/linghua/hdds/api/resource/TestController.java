@@ -4,9 +4,9 @@ import com.google.gson.Gson;
 import com.linghua.hdds.api.response.Node;
 import com.linghua.hdds.api.service.ItemService;
 import com.linghua.hdds.common.*;
+import com.linghua.hdds.api.conf.UserGraphAnalysis;
 import com.linghua.hdds.store.Item;
 
-import org.lionsoul.jcseg.tokenizer.core.JcsegException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.QueryParam;
-import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -51,6 +49,16 @@ public class TestController {
 
         return new Gson().toJson(item);
     }
+
+    @RequestMapping("/get/buildGraph/{biz}/{iid}")
+    @ResponseBody
+    public String buildGraph(@PathVariable(value = "biz") String biz, @PathVariable(value = "iid") String iid) {
+        UserGraphAnalysis userGraphAnalysis=new UserGraphAnalysis();
+        userGraphAnalysis.build("headlines");
+
+        return null;
+    }
+
     @RequestMapping("/get/{biz}/{iid}")
     @ResponseBody
     public String get(@PathVariable(value = "biz") String biz, @PathVariable(value = "iid") String iid) {

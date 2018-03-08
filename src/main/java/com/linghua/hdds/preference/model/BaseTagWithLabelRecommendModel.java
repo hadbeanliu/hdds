@@ -218,7 +218,7 @@ public class BaseTagWithLabelRecommendModel {
             return axpy(uv,sub);
         }else {
 
-                DenseVector uv = new DenseVector();
+            DenseVector uv = new DenseVector();
             return axpy(uv,sub);
         }
 	}

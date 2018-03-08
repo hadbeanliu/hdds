@@ -23,6 +23,7 @@ import com.linghua.hdds.store.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value="/user")
@@ -142,6 +143,16 @@ public class UserController {
         return u;
 	}
 
+	@RequestMapping(value = "/get/graph/{biz_code}/{uid}")
+    @ResponseBody
+    public Map<String,Long> getUserGraph(@PathVariable("uid") String uid, @PathVariable("biz_code") String biz_code){
+        Assert.hasLength(uid,"不合法的用户");
+
+        User u = this.dao.get(biz_code, uid);
+        if( u!=null && u.getInfo()!=null && u.getInfo().get("config")!=null)
+            return u.getGraph();
+        return null;
+    }
 
 	@RequestMapping(value="/getConfig/{biz_code}/{uid}/{pid}")
 	@ResponseBody
